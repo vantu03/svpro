@@ -1,0 +1,137 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:svpro/models/schedule.dart';
+import 'package:svpro/services/api_service.dart';
+import 'package:svpro/services/local_storage.dart';
+import 'package:svpro/utils/notifier.dart';
+import 'package:svpro/widgets/dot_loading_text.dart';
+import 'package:svpro/widgets/schedule/schedule_display.dart';
+import 'package:svpro/widgets/tab_item.dart';
+
+class ScheduleTab extends StatefulWidget implements TabItem {
+  const ScheduleTab({super.key});
+
+  @override
+  String get label => 'Lịch học';
+
+  @override
+  IconData get icon => Icons.calendar_today;
+
+  @override
+  State<ScheduleTab> createState() => ScheduleTabState();
+}
+
+class ScheduleTabState extends State<ScheduleTab> {
+
+  bool isLoading = false;
+  late List<Schedule> events = [];
+  late List<DateTime> days = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.blueAccent,
+        actions: [
+          if (LocalStorage.auth_token.isNotEmpty) ...[
+            if (isLoading) ...[
+              const DotLoadingText()
+            ] else ...[
+              IconButton(
+                icon: const Icon(Icons.sync),
+                tooltip: 'Tải lại lịch học',
+                onPressed: () async {
+                  setState(() {
+                    isLoading = true;
+                  });
+                  await fetchSchedule();
+                  setState(() {
+                    isLoading = false;
+                  });
+                },
+              ),
+            ],
+          ],
+        ]
+      ),
+
+      body: Row(
+        children: [
+          if (LocalStorage.auth_token.isEmpty || LocalStorage.schedule.isEmpty) ...[
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Chưa có dữ liệu lịch học.',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 16),
+                    if (LocalStorage.auth_token.isNotEmpty) ...[
+                      if (!isLoading)
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            await fetchSchedule();
+                            setState(() {
+                              isLoading = false;
+                            });
+                          },
+                          icon: const Icon(Icons.sync),
+                          label: const Text('Cập nhật lịch học'),
+                        ),
+                      if (isLoading)
+                        const DotLoadingText(),
+                    ] else ...[
+                      ElevatedButton.icon(
+                        onPressed: () => context.go('/login'),
+                        icon: const Icon(Icons.login),
+                        label: const Text('Đăng nhập'),
+                      ),
+                    ]
+                  ],
+                ),
+              ),
+            )
+          ] else
+          Expanded(
+            child: ScheduleDisplay(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> fetchSchedule() async {
+
+    Notifier.info(context, 'Đang tải lịch học...');
+
+    try {
+      final response = await ApiService.getSchedule();
+      var jsonData = jsonDecode(response.body);
+      if (jsonData['status'] == 'success') {
+        LocalStorage.lastUpdateTime = DateTime.now();
+        LocalStorage.schedule = jsonData['message'];
+        if (mounted) {
+          Notifier.success(context, 'Lịch đã được đồng bộ với hệ thống!');
+        }
+        LocalStorage.push();
+      } else {
+        if (mounted) {
+          Notifier.error(context, jsonData['message']);
+        }
+      }
+    } catch (e){
+      if (mounted) {
+        Notifier.error(context, e.toString());
+      }
+    }
+  }
+
+}

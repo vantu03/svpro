@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "860440377687",
+    "project_id": "svpro-26929",
+    "storage_bucket": "svpro-26929.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:860440377687:android:c15b2138b6bb54addf2612",
+        "android_client_info": {
+          "package_name": "com.vantu.svpro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDITMOjZO52Tywm84gm_2YwNDTp_g5t2NE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
