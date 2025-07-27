@@ -43,9 +43,9 @@ class LocalStorage {
   static Future<void> push() async {
     final prefs = await SharedPreferences.getInstance();
 
-    await prefs.setString('auth_token', auth_token ?? '');
+    await prefs.setString('auth_token', auth_token);
 
-    await prefs.setString('schedule_json', jsonEncode(schedule ?? {}));
+    await prefs.setString('schedule_json', jsonEncode(schedule));
 
     if (lastUpdateTime != null) {
       await prefs.setString('last_update', lastUpdateTime!.toIso8601String());
@@ -58,7 +58,7 @@ class LocalStorage {
     await prefs.setInt('notifyWeeklyHour', notifyWeeklyHour);
     await prefs.setInt('notifyWeeklyMinute', notifyWeeklyMinute);
 
-    await prefs.setString('fcm_token', fcm_token ?? '');
+    await prefs.setString('fcm_token', fcm_token);
   }
 
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_scheduler.dart';
+import 'package:svpro/services/notification_service.dart';
 import 'package:svpro/widgets/time_picker_tile.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
@@ -103,7 +104,37 @@ class NotificationSettingsScreenState extends State<NotificationSettingsScreen> 
                   ],
                 ),
               ),
+            ),const SizedBox(height: 16),
+
+            ElevatedButton.icon(
+              onPressed: () async {
+                final now = DateTime.now();
+
+                // Gửi thông báo ngay
+                await NotificationService().showNotification(
+                  id: 999,
+                  title: 'Test ngay',
+                  body: 'Thông báo hiển thị ngay lập tức!',
+                );
+
+                // Gửi thông báo sau 5 giây
+                await NotificationService().scheduleNotification(
+                  id: 1000,
+                  title: 'Test sau 5s',
+                  body: 'Thông báo được gửi sau 5 giây!',
+                  scheduledDateTime: now.add(const Duration(seconds: 5)),
+                );
+              },
+              icon: const Icon(Icons.notifications_active),
+              label: const Text('Test thông báo'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
             ),
+
           ],
         ),
       ),

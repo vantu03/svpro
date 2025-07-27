@@ -19,22 +19,42 @@ class SplashScreenState extends State<SplashScreen> {
   double progress = 0;
 
   Future<void> initApp() async {
-    try {
       await LocalStorage.init();
       setState(() => progress = 0.2);
 
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
+      try {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+      } catch (e) {
+        if (mounted) {
+          Notifier.error(context, "Init error: $e");
+        }
+        print("ERROR: ${e.toString()}");
+      }
       setState(() => progress = 0.5);
+      try {
+        await NotificationService.instance.init();
+      } catch (e) {
+        if (mounted) {
+          Notifier.error(context, "Init error: $e");
+        }
+        print("ERROR: ${e.toString()}");
+      }
 
-      await NotificationService.instance.init();
       setState(() => progress = 0.75);
 
       if (defaultTargetPlatform == TargetPlatform.android ||
-          defaultTargetPlatform == TargetPlatform.iOS ||
-          kIsWeb) {
-        await PushNotificationService().init();
+            defaultTargetPlatform == TargetPlatform.iOS ||
+            kIsWeb) {
+        try {
+          await PushNotificationService().init();
+        } catch (e) {
+          if (mounted) {
+            Notifier.error(context, "Init error: $e");
+          }
+          print("ERROR: ${e.toString()}");
+        }
       }
       setState(() => progress = 1.0);
 
@@ -42,12 +62,6 @@ class SplashScreenState extends State<SplashScreen> {
       if (mounted) {
         context.go('/home');
       }
-    } catch (e) {
-      if (mounted) {
-        Notifier.error(context, "Init error: $e");
-      }
-      // Hiện UI thông báo lỗi nếu cần
-    }
   }
 
   @override

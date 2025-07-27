@@ -61,6 +61,16 @@ class NotificationService {
       onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
       onDidReceiveBackgroundNotificationResponse: notificationTapBackground, // optional
     );
+
+    //Xin quyền ios
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
   }
     // Handle when notification is tapped
   void onDidReceiveNotificationResponse(NotificationResponse response) {
@@ -151,7 +161,11 @@ class NotificationService {
       playSound: true,
     );
 
-    const iosDetails = DarwinNotificationDetails();
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
 
     const winDetails = WindowsNotificationDetails(
     );

@@ -6,7 +6,6 @@ import 'package:svpro/models/schedule.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/utils/notifier.dart';
-import 'package:svpro/widgets/dot_loading_text.dart';
 import 'package:svpro/widgets/schedule/schedule_display.dart';
 import 'package:svpro/widgets/tab_item.dart';
 
@@ -38,7 +37,7 @@ class ScheduleTabState extends State<ScheduleTab> {
         actions: [
           if (LocalStorage.auth_token.isNotEmpty) ...[
             if (isLoading) ...[
-              const DotLoadingText()
+              const CircularProgressIndicator()
             ] else ...[
               IconButton(
                 icon: const Icon(Icons.sync),
@@ -87,7 +86,7 @@ class ScheduleTabState extends State<ScheduleTab> {
                           label: const Text('Cập nhật lịch học'),
                         ),
                       if (isLoading)
-                        const DotLoadingText(),
+                        const CircularProgressIndicator(),
                     ] else ...[
                       ElevatedButton.icon(
                         onPressed: () => context.go('/login'),

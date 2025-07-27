@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/utils/notifier.dart';
-import 'package:svpro/widgets/dot_loading_text.dart';
 
 class LoginScreen extends StatefulWidget {
 
@@ -127,7 +126,7 @@ class LoginScreenState extends State<LoginScreen> {
                       ),
                       child:
                         isLoading ?
-                        const DotLoadingText() :
+                        const CircularProgressIndicator() :
                         const Text('Đăng nhập', style: TextStyle(fontSize: 16, color: Colors.white),),
                     ),
                   ],
