@@ -15,7 +15,18 @@ class PushNotificationService {
     final token = await messaging.getToken();
 
     if (token != null) {
-      sendTokenToServer(token);
+      LocalStorage.fcm_token = token;
+
+      try {
+        final response = await ApiService.sendFcmToken();
+
+        if (response.statusCode == 200) {
+          print("Token sent and saved: ${token.toString()}");
+        }
+        print("Failed to send token to server");
+      } catch (e) {
+        print("Exception: $e");
+      }
     }
 
     //Nhận thông báo khi app đang chạy (foreground)
@@ -42,22 +53,4 @@ class PushNotificationService {
 
     }
   }
-
-  Future<bool> sendTokenToServer(String token) async {
-    try {
-      final response = await ApiService.sendFcmToken(token);
-
-      if (response.statusCode == 200) {
-        LocalStorage.fcm_token = token;
-        print("Token sent and saved: ${token.toString()}");
-        return false;
-      }
-      print("Failed to send token to server");
-    } catch (e) {
-      print("Exception: $e");
-    }
-    return false;
-  }
-
-
 }
