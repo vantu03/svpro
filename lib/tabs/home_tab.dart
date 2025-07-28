@@ -7,6 +7,7 @@ import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/utils/notifier.dart';
 import 'package:svpro/widgets/feature_item.dart';
 import 'package:svpro/widgets/features/feature_send.dart';
+import 'package:svpro/widgets/features/feature_shipper.dart';
 import 'package:svpro/widgets/tab_item.dart';
 
 class HomeTab extends StatefulWidget implements TabItem {
@@ -25,6 +26,7 @@ class HomeTab extends StatefulWidget implements TabItem {
 class HomeTabState extends State<HomeTab> {
   final List<FeatureItem> features = const [
     FeatureSend(),
+    FeatureShipper(),
   ];
 
   List<String> banners = [];
@@ -43,7 +45,7 @@ class HomeTabState extends State<HomeTab> {
       var jsonData = jsonDecode(response.body);
       if (jsonData['status'] == 'success') {
         setState(() {
-          banners = jsonData['urls'];
+          banners = (jsonData['urls'] as List).cast<String>();
           isLoading = false;
         });
       } else {

@@ -6,7 +6,6 @@ import 'package:svpro/services/notification_service.dart';
 import 'package:svpro/services/push_notification_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:svpro/utils/notifier.dart';
-import 'package:flutter/foundation.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -87,14 +86,8 @@ class SplashScreenState extends State<SplashScreen> {
             bottom: 48,
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: [const Text(
-                "Đnag tải...",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              children: [
+
                 LinearProgressIndicator(
                   value: progress,
                   color: Colors.white,
