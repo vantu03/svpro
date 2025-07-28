@@ -18,11 +18,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       routerConfig: GoRouter(
-        //initialLocation: '/splash',
+        initialLocation: '/splash',
         routes: [
           GoRoute(
-            path: '/',
-            builder: (context, state) => const SplashScreen(),
+            path: '/splash',
+            builder: (context, state) => SplashScreen(),
           ),
           GoRoute(
             path: '/home',
