@@ -1,3 +1,4 @@
+import 'package:svpro/models/feature.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_service.dart';
 import 'package:svpro/models/schedule.dart';

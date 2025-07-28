@@ -30,7 +30,7 @@ class SplashScreenState extends State<SplashScreen> {
         if (mounted) {
           Notifier.error(context, "Init error: $e");
         }
-        print("ERROR: ${e.toString()}");
+        print("ERROR1: ${e.toString()}");
       }
       setState(() => progress = 0.5);
       try {
@@ -39,23 +39,23 @@ class SplashScreenState extends State<SplashScreen> {
         if (mounted) {
           Notifier.error(context, "Init error: $e");
         }
-        print("ERROR: ${e.toString()}");
+        print("ERROR2: ${e.toString()}");
       }
 
       setState(() => progress = 0.75);
 
-      if (defaultTargetPlatform == TargetPlatform.android ||
-            defaultTargetPlatform == TargetPlatform.iOS ||
-            kIsWeb) {
+      //if (defaultTargetPlatform == TargetPlatform.android ||
+      //      defaultTargetPlatform == TargetPlatform.iOS ||
+      //      kIsWeb) {
         try {
           await PushNotificationService().init();
         } catch (e) {
           if (mounted) {
             Notifier.error(context, "Init error: $e");
           }
-          print("ERROR: ${e.toString()}");
+          print("ERROR3: ${e.toString()}");
         }
-      }
+      //}
       setState(() => progress = 1.0);
 
       await Future.delayed(const Duration(milliseconds: 100));

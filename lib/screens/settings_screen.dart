@@ -134,7 +134,6 @@ class NotificationSettingsScreenState extends State<NotificationSettingsScreen> 
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
-
           ],
         ),
       ),

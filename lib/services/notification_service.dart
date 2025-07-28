@@ -21,16 +21,20 @@ class NotificationService {
     tz.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Asia/Ho_Chi_Minh'));
 
-    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-
 // Android init (phải đặt icon trong `android/app/src/main/res/drawable/`)
     const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
 
 
 // iOS & macOS
     final DarwinInitializationSettings initializationSettingsDarwin =
-    DarwinInitializationSettings();
+    DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+      defaultPresentAlert: true,
+      defaultPresentBadge: true,
+      defaultPresentSound: true,
+    );
 
 // Linux
     final LinuxInitializationSettings initializationSettingsLinux =
@@ -63,13 +67,13 @@ class NotificationService {
     );
 
     //Xin quyền ios
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    final plugin = flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+
+    final settings = await plugin?.requestPermissions(alert: true, badge: true, sound: true);
+    print('🟢 iOS notification permission granted: $settings');
+
+
 
   }
     // Handle when notification is tapped
@@ -102,7 +106,12 @@ class NotificationService {
       playSound: true,
     );
 
-    const iosDetails = DarwinNotificationDetails();
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
 
     const notificationDetails = NotificationDetails(
       android: androidDetails,
@@ -116,6 +125,7 @@ class NotificationService {
       notificationDetails,
       payload: payload,
     );
+    print('Da gui thong bao');
   }
 
   /// Schedule a notification for a specific time (even after reboot if allowed)
@@ -128,6 +138,10 @@ class NotificationService {
     BuildContext? context,
   }) async {
 
+    if (scheduledDateTime.isBefore(DateTime.now())) {
+      print('⛔ Thời gian đặt thông báo đã trôi qua: $scheduledDateTime');
+      return;
+    }
     // Kiểm tra quyền exact alarm nếu Android 12+
     if (Platform.isAndroid) {
       final androidInfo = await DeviceInfoPlugin().androidInfo;
@@ -185,6 +199,8 @@ class NotificationService {
       payload: payload,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
+
+    print('Da gui thong bao lich');
   }
 
   Future<void> cancelAllNotifications() async {
@@ -194,4 +210,20 @@ class NotificationService {
   Future<void> cancelNotification(int id) async {
     await flutterLocalNotificationsPlugin.cancel(id);
   }
+
+  Future<void> test() async {
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      'Test title',
+      'Test body',
+      const NotificationDetails(
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      ),
+    );
+  }
+
 }

@@ -30,6 +30,17 @@
 	<string>NSApplication</string>
 	<key>com.apple.security.network.client</key>
     <true/>
+    <key>NSUserNotificationAlertStyle</key>
+    <string>alert</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>Ứng dụng cần truy cập mạng nội bộ để hoạt động.</string>
 
+    <key>com.apple.security.network.client</key>
+    <true/>
 </dict>
 </plist>

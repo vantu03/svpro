@@ -54,5 +54,14 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>UIBackgroundModes</key>
+    <array>
+        <string>remote-notification</string>
+    </array>
+    <key>NSUserTrackingUsageDescription</key>
+    <string>Ứng dụng cần quyền gửi thông báo đến bạn.</string>
+    <key>FirebaseAppDelegateProxyEnabled</key>
+    <false/>
+
 </dict>
 </plist>

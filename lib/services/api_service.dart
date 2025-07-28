@@ -46,17 +46,11 @@ class ApiService {
     );
   }
 
-  static Future<http.Response> getFeatureList() async {
+  static Future<http.Response> getBanners() async {
     return await http.get(
-      Uri.parse('$baseUrl/features/'),
+      Uri.parse('$baseUrl/home/banners'),
       headers: authHeaders,
     );
   }
 
-  static Future<http.Response> getFeatureDetail(String featureId) async {
-    return await http.get(
-      Uri.parse('$baseUrl/features/$featureId'),
-      headers: authHeaders,
-    );
-  }
 }
