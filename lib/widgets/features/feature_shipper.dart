@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:svpro/widgets/feature_item.dart';
-import 'package:svpro/widgets/features/shipper.dart';
+import 'package:svpro/widgets/features/shipper_register_form.dart';
 
 class FeatureShipper extends StatefulWidget implements FeatureItem {
   const FeatureShipper({super.key});
@@ -28,7 +28,7 @@ class FeatureShipperState extends State<FeatureShipper> {
       backgroundColor: Colors.white,
       body:
       FutureBuilder(
-        future: Future.delayed(Duration(seconds: 2)),
+        future: Future.delayed(Duration(seconds: 1)),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
