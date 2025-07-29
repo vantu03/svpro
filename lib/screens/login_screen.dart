@@ -30,6 +30,7 @@ class LoginScreenState extends State<LoginScreen> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Center(
@@ -39,7 +40,8 @@ class LoginScreenState extends State<LoginScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(Icons.school, size: 72, color: Colors.blueAccent),
+                /*const Icon(Icons.school, size: 72, color: Colors.blueAccent),*/
+                Image.asset('assets/icon/app_icon.png', height: 100, width: 100,),
                 const SizedBox(height: 24),
                 TextField(
                   controller: studentIdController,
@@ -125,8 +127,6 @@ class LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       child:
-                        isLoading ?
-                        const CircularProgressIndicator() :
                         const Text('Đăng nhập', style: TextStyle(fontSize: 16, color: Colors.white),),
                     ),
                   ],

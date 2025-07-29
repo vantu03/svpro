@@ -21,7 +21,9 @@ class NotificationTabState extends State<NotificationTab> {
       appBar: AppBar(
         title: Text(widget.label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.blueAccent,
+        centerTitle: false,
       ),
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

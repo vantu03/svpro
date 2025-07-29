@@ -54,9 +54,11 @@ class ScheduleTabState extends State<ScheduleTab> {
               ),
             ],
           ],
-        ]
+        ],
+        centerTitle: false,
       ),
 
+      backgroundColor: Colors.white,
       body: Row(
         children: [
           if (LocalStorage.auth_token.isEmpty || LocalStorage.schedule.isEmpty) ...[

@@ -22,6 +22,7 @@ class NotificationSettingsScreenState extends State<NotificationSettingsScreen> 
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

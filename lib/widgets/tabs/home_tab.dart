@@ -9,6 +9,7 @@ import 'package:svpro/widgets/feature_item.dart';
 import 'package:svpro/widgets/features/feature_send.dart';
 import 'package:svpro/widgets/features/feature_shipper.dart';
 import 'package:svpro/widgets/tab_item.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class HomeTab extends StatefulWidget implements TabItem {
   const HomeTab({super.key});
@@ -67,9 +68,11 @@ class HomeTabState extends State<HomeTab> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.label, style: const TextStyle(color: Colors.white)),
+        title: Text(widget.label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.blueAccent,
+        centerTitle: false,
       ),
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -98,17 +101,12 @@ class HomeTabState extends State<HomeTab> {
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              banners[index],
+            child: CachedNetworkImage(
+              imageUrl: banners[index],
               width: double.infinity,
               fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Center(child: CircularProgressIndicator());
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return const Center(child: Icon(Icons.broken_image, size: 48, color: Colors.grey));
-              },
+              placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+              errorWidget: (context, url, error) => const Icon(Icons.broken_image, size: 48, color: Colors.grey),
             ),
           ),
         ),

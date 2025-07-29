@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:svpro/screens/home_screen.dart';
 import 'package:svpro/screens/login_screen.dart';
 import 'package:svpro/screens/settings_screen.dart';
-import 'package:svpro/screens/splash_screen.dart';
+import 'package:svpro/screens/init_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,11 +18,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       routerConfig: GoRouter(
-        initialLocation: '/splash',
+        initialLocation: '/',
         routes: [
           GoRoute(
-            path: '/splash',
-            builder: (context, state) => SplashScreen(),
+            path: '/',
+            builder: (context, state) => InitScreen(),
           ),
           GoRoute(
             path: '/home',

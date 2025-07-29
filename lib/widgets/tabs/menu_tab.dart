@@ -25,7 +25,9 @@ class MenuTabState extends State<MenuTab> {
       appBar: AppBar(
         title: Text(widget.label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.blueAccent,
+        centerTitle: false,
       ),
+      backgroundColor: Colors.white,
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         children: [

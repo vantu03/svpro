@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:svpro/tabs/home_tab.dart';
-import 'package:svpro/tabs/schedule_tab.dart';
-import 'package:svpro/tabs/notification_tab.dart';
-import 'package:svpro/tabs/menu_tab.dart';
+import 'package:svpro/widgets/tabs/home_tab.dart';
+import 'package:svpro/widgets/tabs/schedule_tab.dart';
+import 'package:svpro/widgets/tabs/notification_tab.dart';
+import 'package:svpro/widgets/tabs/menu_tab.dart';
 import 'package:svpro/widgets/tab_item.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -36,6 +36,7 @@ class HomeScreenState extends State<HomeScreen> {
         index: currentIndex,
         children: tabs.cast<Widget>(),
       ),
+      backgroundColor: Colors.white,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         onTap: (index) => setState(() => currentIndex = index),

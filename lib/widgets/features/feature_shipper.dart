@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:svpro/widgets/feature_item.dart';
+import 'package:svpro/widgets/features/shipper.dart';
 
-class FeatureShipper extends StatelessWidget implements FeatureItem {
+class FeatureShipper extends StatefulWidget implements FeatureItem {
   const FeatureShipper({super.key});
 
   @override
@@ -11,54 +12,32 @@ class FeatureShipper extends StatelessWidget implements FeatureItem {
   IconData get icon => Icons.delivery_dining;
 
   @override
-  Widget build(BuildContext context) {
-    final _formKey = GlobalKey<FormState>();
-    final nameController = TextEditingController();
-    final phoneController = TextEditingController();
+  State<FeatureShipper> createState() => FeatureShipperState();
+}
 
+class FeatureShipperState extends State<FeatureShipper> {
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(label)),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              Text(
-                'Đăng ký làm Shipper',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 24),
-              TextFormField(
-                controller: nameController,
-                decoration: InputDecoration(labelText: 'Họ tên'),
-                validator: (value) =>
-                value == null || value.isEmpty ? 'Nhập họ tên' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: phoneController,
-                decoration: InputDecoration(labelText: 'Số điện thoại'),
-                keyboardType: TextInputType.phone,
-                validator: (value) =>
-                value == null || value.length < 10 ? 'SĐT không hợp lệ' : null,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                icon: Icon(Icons.check),
-                label: Text('Gửi đăng ký'),
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    // Gửi dữ liệu lên server nếu cần
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Đã gửi đăng ký!')),
-                    );
-                  }
-                },
-              ),
-            ],
-          ),
-        ),
+      appBar: AppBar(
+        title: Text(widget.label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.blueAccent,
+        centerTitle: false,
+      ),
+      backgroundColor: Colors.white,
+      body:
+      FutureBuilder(
+        future: Future.delayed(Duration(seconds: 2)),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Đã xảy ra lỗi!'));
+          } else {
+            return ShipperRegisterForm();
+          }
+        },
       ),
     );
   }

@@ -71,7 +71,7 @@ class NotificationService {
         .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
 
     final settings = await plugin?.requestPermissions(alert: true, badge: true, sound: true);
-    print('🟢 iOS notification permission granted: $settings');
+    print('iOS notification permission granted: $settings');
 
 
 
@@ -79,13 +79,13 @@ class NotificationService {
     // Handle when notification is tapped
   void onDidReceiveNotificationResponse(NotificationResponse response) {
     // handle tap action here
-    print("🔔 Notification clicked: ${response.payload}, ${response.id}, ${response.actionId}");
+    print("Notification clicked: ${response.payload}, ${response.id}, ${response.actionId}");
   }
 
   // Required entrypoint for background notification response
   @pragma('vm:entry-point')
   static void notificationTapBackground(NotificationResponse response) {
-    print('🔕 Background Notification tapped: ${response.payload}, ${response.id}, ${response.actionId}');
+    print('Background Notification tapped: ${response.payload}, ${response.id}, ${response.actionId}');
   }
 
   /// Show an immediate notification
@@ -125,7 +125,6 @@ class NotificationService {
       notificationDetails,
       payload: payload,
     );
-    print('Da gui thong bao');
   }
 
   /// Schedule a notification for a specific time (even after reboot if allowed)
@@ -139,7 +138,7 @@ class NotificationService {
   }) async {
 
     if (scheduledDateTime.isBefore(DateTime.now())) {
-      print('⛔ Thời gian đặt thông báo đã trôi qua: $scheduledDateTime');
+      print('Thời gian đặt thông báo đã trôi qua: $scheduledDateTime');
       return;
     }
     // Kiểm tra quyền exact alarm nếu Android 12+
@@ -154,7 +153,7 @@ class NotificationService {
             if (context != null) {
               Notifier.error(context, 'Quền đặt lịch thông báo chính xác bị từ chối.');
             } else {
-              print('❌ Không được phép đặt lịch thông báo chính xác.');
+              print('Không được phép đặt lịch thông báo chính xác.');
             }
             return;
           }
@@ -199,8 +198,6 @@ class NotificationService {
       payload: payload,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
-
-    print('Da gui thong bao lich');
   }
 
   Future<void> cancelAllNotifications() async {
@@ -209,21 +206,6 @@ class NotificationService {
 
   Future<void> cancelNotification(int id) async {
     await flutterLocalNotificationsPlugin.cancel(id);
-  }
-
-  Future<void> test() async {
-    await flutterLocalNotificationsPlugin.show(
-      0,
-      'Test title',
-      'Test body',
-      const NotificationDetails(
-        iOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-        ),
-      ),
-    );
   }
 
 }
