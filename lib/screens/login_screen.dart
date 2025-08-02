@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/services/local_storage.dart';
@@ -24,6 +25,7 @@ class LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: false,
         backgroundColor: Colors.blueAccent,
         title: const Text(
           'Đăng nhập',
@@ -31,103 +33,108 @@ class LoginScreenState extends State<LoginScreen> {
         ),
       ),
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+      body: SafeArea(
         child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                /*const Icon(Icons.school, size: 72, color: Colors.blueAccent),*/
-                Image.asset('assets/icon/app_icon.png', height: 100, width: 100,),
                 const SizedBox(height: 24),
-                TextField(
-                  controller: studentIdController,
-                  decoration: InputDecoration(
-                    labelText: 'Mã sinh viên',
-                    prefixIcon: const Icon(Icons.person_outline),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: passwordController,
-                  obscureText: !isPasswordVisible,
-                  decoration: InputDecoration(
-                    labelText: 'Mật khẩu',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        isPasswordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          isPasswordVisible = !isPasswordVisible;
-                        });
-                      },
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                Stack(
+                  clipBehavior: Clip.none,
                   children: [
-                    ElevatedButton(
-                      onPressed: isLoading ? null : () async {
-                        final username = studentIdController.text.trim();
-                        final password = passwordController.text.trim();
-
-                        if (username.isEmpty || password.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin!')),
-                          );
-                          return;
-                        }
-
-                        setState(() => isLoading = true);
-
-                        final response = await ApiService.login(username, password);
-
-                        try {
-                          var jsonData = jsonDecode(response.body);
-                          if (jsonData['status'] == 'success') {
-                            if (context.mounted) {
-                              Notifier.success(context, 'Đăng nhập thành công!');
-                              context.go('/home');
-                            }
-                            LocalStorage.auth_token = jsonData['token'];
-                            LocalStorage.push();
-                          } else {
-                            if (context.mounted) {
-                              Notifier.error(context, jsonData['message']);
-                            }
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            Notifier.error(context, e.toString());
-                          }
-                        }
-                        setState(() => isLoading = false);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 6,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'Dùng tài khoản đã đăng ký hoặc dùng tài khoản của sinh viên ở các trang tín chỉ.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 14),
+                            ),
+                            const SizedBox(height: 24),
+                            TextField(
+                              controller: studentIdController,
+                              decoration: InputDecoration(
+                                labelText: 'Tài khoản, mã sinh viên',
+                                prefixIcon: const Icon(Icons.person_outline),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            TextField(
+                              controller: passwordController,
+                              obscureText: !isPasswordVisible,
+                              decoration: InputDecoration(
+                                labelText: 'Mật khẩu',
+                                prefixIcon: const Icon(Icons.lock_outline),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                                  ),
+                                  onPressed: () => setState(() => isPasswordVisible = !isPasswordVisible),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: isLoading ? null : handleLogin,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blueAccent,
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: isLoading
+                                    ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                )
+                                    : const Text('Đăng nhập', style: TextStyle(fontSize: 16, color: Colors.white)),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      child:
-                        const Text('Đăng nhập', style: TextStyle(fontSize: 16, color: Colors.white),),
+                    ),
+
+                    // Logo lồng vào viền trên
+                    Positioned(
+                      top: -40,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                            border: Border.all(color: Colors.blueAccent, width: 3),
+                          ),
+                          child: SvgPicture.asset(
+                            'assets/icon/app_icon.svg',
+                            height: 64,
+                            width: 64,
+                          ),
+
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -137,6 +144,41 @@ class LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+
+  Future<void> handleLogin() async {
+    final username = studentIdController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (username.isEmpty || password.isEmpty) {
+      Notifier.warning(context, 'Vui lòng nhập đầy đủ thông tin!');
+      return;
+    }
+
+    setState(() => isLoading = true);
+    final response = await ApiService.login(username, password);
+
+    try {
+      var jsonData = jsonDecode(response.body);
+      if (jsonData['detail']['status']) {
+        LocalStorage.auth_token = jsonData['detail']['data']['token'];
+        await LocalStorage.push();
+        if (mounted) {
+          context.go('/home');
+          Notifier.success(context, 'Đăng nhập thành công!');
+        }
+      } else {
+        if (mounted) {
+          Notifier.error(context, jsonData['detail']['message']);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Notifier.error(context, 'Lỗi hệ thống: $e');
+      }
+    }
+    setState(() => isLoading = false);
   }
 
 }

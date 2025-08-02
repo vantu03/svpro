@@ -31,36 +31,52 @@ class InitScreenState extends State<InitScreen> {
     print("🔁 initApp started");
 
     await LocalStorage.init();
-    setState(() => progress = 0.2);
+    if (mounted) {
+      setState(() => progress = 0.2);
+    }
 
     try {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
     } catch (e) {
-      Notifier.error(context, "Firebase init failed: $e");
+
+      if (mounted) {
+        Notifier.error(context, "Firebase init failed: $e");
+      }
       print("❌ Firebase init error: $e");
     }
 
-    setState(() => progress = 0.5);
+    if (mounted) {
+      setState(() => progress = 0.5);
+    }
 
     try {
       await NotificationService.instance.init();
     } catch (e) {
-      Notifier.error(context, "Notification init failed: $e");
+
+      if (mounted) {
+        Notifier.error(context, "Notification init failed: $e");
+      }
       print("❌ Notification init error: $e");
     }
-
-    setState(() => progress = 0.75);
+    if (mounted) {
+      setState(() => progress = 0.75);
+    }
 
     try {
       await PushNotificationService().init();
     } catch (e) {
-      Notifier.error(context, "Push init failed: $e");
+
+      if (mounted) {
+        Notifier.error(context, "Push init failed: $e");
+      }
       print("❌ Push init error: $e");
     }
 
-    setState(() => progress = 1.0);
+    if (mounted) {
+      setState(() => progress = 1.0);
+    }
     await Future.delayed(const Duration(milliseconds: 100));
 
     if (mounted) {

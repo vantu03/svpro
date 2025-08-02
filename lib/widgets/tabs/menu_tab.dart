@@ -1,7 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:svpro/screens/home_screen.dart';
+import 'package:svpro/services/api_service.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_scheduler.dart';
+import 'package:svpro/utils/dialog_helper.dart';
+import 'package:svpro/utils/notifier.dart';
 import 'package:svpro/widgets/tab_item.dart';
 
 class MenuTab extends StatefulWidget implements TabItem {
@@ -14,16 +20,26 @@ class MenuTab extends StatefulWidget implements TabItem {
   IconData get icon => Icons.menu;
 
   @override
-  State<MenuTab> createState() => MenuTabState();
+  State<MenuTab> createState() => _MenuTabState();
+
+  @override
+  void onTab() {
+
+  }
+
 }
 
-class MenuTabState extends State<MenuTab> {
+class _MenuTabState extends State<MenuTab> {
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(
+          widget.label,
+          style: const TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.blueAccent,
         centerTitle: false,
       ),
@@ -32,52 +48,59 @@ class MenuTabState extends State<MenuTab> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         children: [
           const Divider(),
-
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('Cài đặt'),
             onTap: () => context.push('/settings'),
           ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text('Đăng xuất',
+                style: TextStyle(color: Colors.red)),
+            onTap: () {
+              DialogHelper.showConfirmationDialog(
+                context: context,
+                title: 'Xác nhận',
+                content: 'Bạn có chắc muốn đăng xuất?',
+                confirmText: 'Đăng xuất',
+                confirmColor: Colors.red,
+                onConfirm: () async {
+                  DialogHelper.showLoadingDialog(context);
 
-          if (LocalStorage.auth_token.isNotEmpty) ...[
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Đăng xuất', style: TextStyle(color: Colors.red)),
-              onTap: () => {
-                showDialog(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: const Text('Xác nhận'),
-                    content: const Text('Bạn có chắc muốn đăng xuất?'),
-                    actions: [
-                      TextButton(
-                        child: const Text('Hủy'),
-                        onPressed: () => Navigator.of(ctx).pop(),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('Đăng xuất'),
-                        onPressed: () async {
-                          Navigator.of(ctx).pop();
-                          LocalStorage.auth_token = '';
-                          LocalStorage.schedule = {};
-                          await LocalStorage.push();
-                          await NotificationScheduler.setupAllLearningNotifications();
-                          if (context.mounted) {
-                            context.go('/');
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                )
-              },
-            ),
-          ]
+                  try {
+                    final response = await ApiService.logout();
+                    final jsonData = jsonDecode(response.body);
+
+                    if (jsonData['detail']['status']) {
+                      if (context.mounted) {
+                        Notifier.warning(context, jsonData['detail']['message']);
+                      }
+                    } else {
+                      if (context.mounted) {
+                        Notifier.error(context, jsonData['detail']['message']);
+                      }
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      Notifier.error(context, 'Lỗi hệ thống: $e');
+                    }
+                  } finally {
+
+                    LocalStorage.auth_token = '';
+                    LocalStorage.schedule = {};
+                    await LocalStorage.push();
+                    await NotificationScheduler.setupAllLearningNotifications();
+
+                    if (context.mounted) {
+                      context.go('/login');
+                      DialogHelper.hideDialog(context);
+                    }
+                  }
+                },
+              );
+            },
+          ),
         ],
       ),
     );

@@ -59,12 +59,6 @@ class ItemState extends State<Item> {
           setState(() => isExpanded = !isExpanded);
         },
         child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(5),
-            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
-          ),
           padding: const EdgeInsets.all(8),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,7 +69,7 @@ class ItemState extends State<Item> {
                   child: Column(
                     children: [
                       Text(dayString, style: const TextStyle(fontSize: 10)),
-                      Text(weekDay, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      Text(weekDay, style: const TextStyle(fontWeight: FontWeight.normal, fontSize: 16)),
                     ],
                   ),
                 ),
@@ -100,7 +94,7 @@ class ItemState extends State<Item> {
                             ],
                           ),
                           const Divider(color: Colors.white70),
-                          Text(widget.event!.className, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text(widget.event!.className, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 6),
                           ...widget.event!.detail.entries.map(
                                 (e) => Row(

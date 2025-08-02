@@ -1,4 +1,3 @@
-import 'package:svpro/models/feature.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_service.dart';
 import 'package:svpro/models/schedule.dart';
@@ -24,10 +23,6 @@ class NotificationScheduler {
         final dateStr = DateFormat('dd/MM/yyyy').format(targetDate);
         final eventsOnTarget = events.where((e) => e.date == dateStr).toList();
 
-        final msg = eventsOnTarget.isEmpty
-            ? 'Mai bạn rảnh?'
-            : 'Mai bạn có ${eventsOnTarget.length} lịch cần thực hiện.';
-
         final scheduledTime = DateTime(
           nextDay.year,
           nextDay.month,
@@ -38,8 +33,8 @@ class NotificationScheduler {
 
         await NotificationService().scheduleNotification(
           id: 200 + i,
-          title: 'Lịch học ngày ${DateFormat('dd/MM').format(targetDate)}',
-          body: msg,
+          title: eventsOnTarget.isEmpty ? 'Mai bạn rảnh?' : 'Mai bạn có ${eventsOnTarget.length} lịch cần thực hiện.',
+          body: 'Lịch ngày ${DateFormat('dd/MM').format(targetDate)}',
           scheduledDateTime: scheduledTime,
         );
       }
@@ -54,10 +49,10 @@ class NotificationScheduler {
           return !eDate.isBefore(nextMonday) && !eDate.isAfter(nextSunday);
         }).toList();
 
-        final msg = nextWeekEvents.isEmpty
-            ? 'Tuần sau bạn rảnh, đã chuẩn bị thư giãn chưa?'
-            : 'Tuần sau bạn có ${nextWeekEvents
-            .length} lịch học cần thực hiện.';
+        final weekNumber = int.parse(DateFormat('w').format(nextMonday));
+        final startStr = DateFormat('dd/MM').format(nextMonday);
+        final endStr = DateFormat('dd/MM').format(nextSunday);
+        final uniqueDays = nextWeekEvents.map((e) => e.date).toSet().length;
 
         final scheduledTime = DateTime(
           nextDay.year,
@@ -69,8 +64,8 @@ class NotificationScheduler {
 
         await NotificationService().scheduleNotification(
           id: 999 + i,
-          title: 'Lịch học tuần tới',
-          body: msg,
+          title: nextWeekEvents.isEmpty ? 'Tuần sau bạn rảnh' : 'Tuần sau bạn có $uniqueDays ngày cần thực hiện.',
+          body: 'Tuần $weekNumber: bắt đầu từ $startStr kết thúc $endStr.${nextWeekEvents.isEmpty ? 'Bạn đã chuẩn bị đi chơi chưa?' : 'Bạn đã chuẩn bị tới đâu rồi...'}',
           scheduledDateTime: scheduledTime,
         );
       }

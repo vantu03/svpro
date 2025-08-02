@@ -37,32 +37,29 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
 
     initSchedule();
 
-    return Container(
-      color: Colors.grey[200],
-      child: ListView.builder(
-        physics: const BouncingScrollPhysics(),
-        itemCount: days.length,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-        itemBuilder: (context, index) {
-          final date = days[index];
-          final filtered = events.where(
-                (e) => e.date == DateFormat('dd/MM/yyyy').format(date),
-          ).toList();
-          return Column(
-            children: [
-              if (filtered.isEmpty)
-                Item(event: null, date: date, showDate: true)
-              else
-                for (int i = 0; i < filtered.length; i++)
-                  Item(
-                    event: filtered[i],
-                    date: date,
-                    showDate: i == 0,
-                  ),
-            ],
-          );
-        },
-      ),
+    return ListView.builder(
+      physics: const BouncingScrollPhysics(),
+      itemCount: days.length,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      itemBuilder: (context, index) {
+        final date = days[index];
+        final filtered = events.where(
+              (e) => e.date == DateFormat('dd/MM/yyyy').format(date),
+        ).toList();
+        return Column(
+          children: [
+            if (filtered.isEmpty)
+              Item(event: null, date: date, showDate: true)
+            else
+              for (int i = 0; i < filtered.length; i++)
+                Item(
+                  event: filtered[i],
+                  date: date,
+                  showDate: i == 0,
+                ),
+          ],
+        );
+      },
     );
   }
 }

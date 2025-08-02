@@ -1,9 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:svpro/services/api_service.dart';
-import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/utils/notifier.dart';
 import 'package:svpro/widgets/feature_item.dart';
 import 'package:svpro/widgets/features/feature_send.dart';
@@ -22,6 +20,11 @@ class HomeTab extends StatefulWidget implements TabItem {
 
   @override
   State<HomeTab> createState() => HomeTabState();
+
+  @override
+  void onTab() {
+
+  }
 }
 
 class HomeTabState extends State<HomeTab> {
@@ -44,9 +47,11 @@ class HomeTabState extends State<HomeTab> {
     try {
       final response = await ApiService.getBanners();
       var jsonData = jsonDecode(response.body);
-      if (jsonData['status'] == 'success') {
+      if (jsonData['detail']['status']) {
         setState(() {
-          banners = (jsonData['urls'] as List).cast<String>();
+          banners = (jsonData['detail']['data'] as List)
+              .map((e) => e['url'] as String)
+              .toList();
           isLoading = false;
         });
       } else {
@@ -62,9 +67,9 @@ class HomeTabState extends State<HomeTab> {
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
-    final isLoggedIn = LocalStorage.auth_token.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -85,7 +90,7 @@ class HomeTabState extends State<HomeTab> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            isLoggedIn ? featureGrid() : loginPrompt(context),
+            featureGrid()
           ],
         ),
       ),
@@ -114,7 +119,6 @@ class HomeTabState extends State<HomeTab> {
     );
   }
 
-
   Widget featureGrid() {
     return Wrap(
       spacing: 16,
@@ -124,50 +128,40 @@ class HomeTabState extends State<HomeTab> {
           onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (_) => item as Widget));
           },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Ink(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: Colors.lightBlueAccent.withOpacity(0.2),
-                  shape: BoxShape.rectangle,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            width: 100,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.15),
+                  blurRadius: 6,
+                  offset: const Offset(0, 4),
                 ),
-                child: Icon(item.icon, size: 32, color: Colors.blueAccent),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: 72,
-                child: Text(
+              ],
+              border: Border.all(color: Colors.blueAccent.withOpacity(0.3)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(item.icon, size: 36, color: Colors.blueAccent),
+                const SizedBox(height: 8),
+                Text(
                   item.label,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 13),
-                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       }).toList(),
-    );
-  }
-
-  Widget loginPrompt(BuildContext context) {
-    return Column(
-      children: [
-        const Text(
-          'Bạn cần đăng nhập để sử dụng tiện ích.',
-          style: TextStyle(color: Colors.red),
-        ),
-        const SizedBox(height: 12),
-        ElevatedButton.icon(
-          onPressed: () => context.go('/login'),
-          icon: const Icon(Icons.login),
-          label: const Text('Đăng nhập'),
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-        ),
-      ],
     );
   }
 }

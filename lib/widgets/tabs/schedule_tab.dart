@@ -20,6 +20,11 @@ class ScheduleTab extends StatefulWidget implements TabItem {
 
   @override
   State<ScheduleTab> createState() => ScheduleTabState();
+
+  @override
+  void onTab() {
+
+  }
 }
 
 class ScheduleTabState extends State<ScheduleTab> {
@@ -35,24 +40,22 @@ class ScheduleTabState extends State<ScheduleTab> {
         title: Text(widget.label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.blueAccent,
         actions: [
-          if (LocalStorage.auth_token.isNotEmpty) ...[
-            if (isLoading) ...[
-              const CircularProgressIndicator()
-            ] else ...[
-              IconButton(
-                icon: const Icon(Icons.sync),
-                tooltip: 'Tải lại lịch học',
-                onPressed: () async {
-                  setState(() {
-                    isLoading = true;
-                  });
-                  await fetchSchedule();
-                  setState(() {
-                    isLoading = false;
-                  });
-                },
-              ),
-            ],
+          if (isLoading) ...[
+            const CircularProgressIndicator()
+          ] else ...[
+            IconButton(
+              icon: const Icon(Icons.sync),
+              tooltip: 'Tải lại lịch học',
+              onPressed: () async {
+                setState(() {
+                  isLoading = true;
+                });
+                await fetchSchedule();
+                setState(() {
+                  isLoading = false;
+                });
+              },
+            ),
           ],
         ],
         centerTitle: false,
@@ -61,7 +64,7 @@ class ScheduleTabState extends State<ScheduleTab> {
       backgroundColor: Colors.white,
       body: Row(
         children: [
-          if (LocalStorage.auth_token.isEmpty || LocalStorage.schedule.isEmpty) ...[
+          if (LocalStorage.schedule.isEmpty) ...[
             Expanded(
               child: Center(
                 child: Column(
@@ -72,30 +75,22 @@ class ScheduleTabState extends State<ScheduleTab> {
                       style: TextStyle(fontSize: 16),
                     ),
                     const SizedBox(height: 16),
-                    if (LocalStorage.auth_token.isNotEmpty) ...[
-                      if (!isLoading)
-                        ElevatedButton.icon(
-                          onPressed: () async {
-                            setState(() {
-                              isLoading = true;
-                            });
-                            await fetchSchedule();
-                            setState(() {
-                              isLoading = false;
-                            });
-                          },
-                          icon: const Icon(Icons.sync),
-                          label: const Text('Cập nhật lịch học'),
-                        ),
-                      if (isLoading)
-                        const CircularProgressIndicator(),
-                    ] else ...[
+                    if (!isLoading)
                       ElevatedButton.icon(
-                        onPressed: () => context.go('/login'),
-                        icon: const Icon(Icons.login),
-                        label: const Text('Đăng nhập'),
+                        onPressed: () async {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          await fetchSchedule();
+                          setState(() {
+                            isLoading = false;
+                          });
+                        },
+                        icon: const Icon(Icons.sync),
+                        label: const Text('Cập nhật lịch học'),
                       ),
-                    ]
+                    if (isLoading)
+                      const CircularProgressIndicator(),
                   ],
                 ),
               ),
@@ -116,21 +111,20 @@ class ScheduleTabState extends State<ScheduleTab> {
     try {
       final response = await ApiService.getSchedule();
       var jsonData = jsonDecode(response.body);
-      if (jsonData['status'] == 'success') {
+      if (jsonData['detail']['status']) {
         LocalStorage.lastUpdateTime = DateTime.now();
-        LocalStorage.schedule = jsonData['message'];
+        LocalStorage.schedule = jsonData['detail']['data'];
         if (mounted) {
           Notifier.success(context, 'Lịch đã được đồng bộ với hệ thống!');
         }
-        LocalStorage.push();
       } else {
         if (mounted) {
-          Notifier.error(context, jsonData['message']);
+          Notifier.error(context, jsonData['detail']['message']);
         }
       }
     } catch (e){
       if (mounted) {
-        Notifier.error(context, e.toString());
+        Notifier.error(context, 'Lỗi hệ thống: $e');
       }
     }
   }
