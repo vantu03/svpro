@@ -10,6 +10,7 @@ class WebSocketClient {
 
   bool isConnected = false;
   bool manuallyClosed = false;
+  Timer? pingTimer;
 
   Function()? onLogout;
   Function()? onConnected;
@@ -40,6 +41,7 @@ class WebSocketClient {
 
     isConnected = true;
     onConnected?.call();
+    //startPing();
 
     channel!.stream.listen(
           (message) {
@@ -80,6 +82,19 @@ class WebSocketClient {
     connect(url);
   }
 
+  void startPing() {
+    pingTimer?.cancel();
+    pingTimer = Timer.periodic(Duration(seconds: 30), (_) {
+      if (isConnected) {
+        try {
+          send('ping', {});
+          print('[WS] → ping');
+        } catch (e) {
+          print('[WS] Ping error: $e');
+        }
+      }
+    });
+  }
   void disconnect() {
     manuallyClosed = true;
     isConnected = false;
@@ -98,7 +113,6 @@ class WebSocketClient {
     try {
       final msg = jsonEncode({'cmd': cmd, 'payload': payload});
       channel!.sink.add(msg);
-      print('[WS] Sent: $msg');
     } catch (e) {
       print('[WS] Send error: $e');
     }

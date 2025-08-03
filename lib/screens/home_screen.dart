@@ -49,6 +49,7 @@ class HomeScreenState extends State<HomeScreen> {
             context.go('/login');
           }
         };
+        //wsService?.connect("wss://api.sv.pro.vn/ws/");
         wsService?.connect("ws://127.0.0.1:8000/ws/");
       }
     });

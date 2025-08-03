@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:svpro/models/schedule.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/services/local_storage.dart';
+import 'package:svpro/services/notification_scheduler.dart';
 import 'package:svpro/utils/notifier.dart';
 import 'package:svpro/widgets/schedule/schedule_display.dart';
 import 'package:svpro/widgets/tab_item.dart';
@@ -114,6 +114,8 @@ class ScheduleTabState extends State<ScheduleTab> {
       if (jsonData['detail']['status']) {
         LocalStorage.lastUpdateTime = DateTime.now();
         LocalStorage.schedule = jsonData['detail']['data'];
+        await NotificationScheduler.setupAllLearningNotifications();
+        await LocalStorage.push();
         if (mounted) {
           Notifier.success(context, 'Lịch đã được đồng bộ với hệ thống!');
         }

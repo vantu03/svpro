@@ -101,6 +101,20 @@ class _MenuTabState extends State<MenuTab> {
               );
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.bug_report, color: Colors.green),
+            title: const Text('Thêm thông báo test',
+                style: TextStyle(color: Colors.green)),
+            onTap: () {
+              if (wsService?.isConnected ?? false) {
+                wsService!.send("add_test_notification", {});
+                Notifier.success(context, "Đã gửi yêu cầu test qua socket.");
+              } else {
+                Notifier.error(context, "Socket chưa kết nối.");
+              }
+            },
+          ),
+
         ],
       ),
     );

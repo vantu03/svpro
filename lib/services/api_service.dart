@@ -6,6 +6,7 @@ import 'local_storage.dart';
 import 'package:http_parser/http_parser.dart';
 
 class ApiService {
+  //static const baseUrl = 'https://api.sv.pro.vn';
   static const baseUrl = 'http://127.0.0.1:8000';
 
   static MediaType getMediaType(String path) {

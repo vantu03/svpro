@@ -49,7 +49,6 @@ class NotificationScheduler {
           return !eDate.isBefore(nextMonday) && !eDate.isAfter(nextSunday);
         }).toList();
 
-        final weekNumber = int.parse(DateFormat('w').format(nextMonday));
         final startStr = DateFormat('dd/MM').format(nextMonday);
         final endStr = DateFormat('dd/MM').format(nextSunday);
         final uniqueDays = nextWeekEvents.map((e) => e.date).toSet().length;
@@ -65,7 +64,7 @@ class NotificationScheduler {
         await NotificationService().scheduleNotification(
           id: 999 + i,
           title: nextWeekEvents.isEmpty ? 'Tuần sau bạn rảnh' : 'Tuần sau bạn có $uniqueDays ngày cần thực hiện.',
-          body: 'Tuần $weekNumber: bắt đầu từ $startStr kết thúc $endStr.${nextWeekEvents.isEmpty ? 'Bạn đã chuẩn bị đi chơi chưa?' : 'Bạn đã chuẩn bị tới đâu rồi...'}',
+          body: 'Tuần tới sẽ bắt đầu từ $startStr kết thúc $endStr.${nextWeekEvents.isEmpty ? 'Bạn đã chuẩn bị đi chơi chưa?' : 'Bạn đã chuẩn bị tới đâu rồi...'}',
           scheduledDateTime: scheduledTime,
         );
       }
