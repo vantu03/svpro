@@ -10,7 +10,6 @@ class WebSocketController {
 
   void onMessage(Map<String, dynamic> msg) async {
     String cmd = msg['cmd'];
-    print(cmd);
     final Map<String, dynamic> payload = msg['payload'] ?? {};
     switch (cmd) {
       case 'auth':
@@ -22,7 +21,6 @@ class WebSocketController {
       case 'auth_failed':
         await client.onLogout?.call();
         break;
-
       case 'notification':
         await client.onNotification?.call(payload);
         break;

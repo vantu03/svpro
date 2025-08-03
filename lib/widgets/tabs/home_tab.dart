@@ -61,10 +61,7 @@ class HomeTabState extends State<HomeTab> {
       setState(() {
         isLoading = false;
       });
-      // Xử lý lỗi nếu cần
-      if (context.mounted) {
-        Notifier.error(context, 'Error fetching banners: $e');
-      }
+      print(e);
     }
   }
 

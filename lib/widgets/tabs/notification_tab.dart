@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:svpro/models/notification.dart';
-import 'package:svpro/screens/home_screen.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/widgets/tab_item.dart';
 import 'package:svpro/utils/notifier.dart';
+import 'package:svpro/ws/ws_client.dart';
 
 class NotificationTab extends StatefulWidget implements TabItem {
   const NotificationTab({super.key});
@@ -34,7 +34,9 @@ class NotificationTabState extends State<NotificationTab> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadNotifications();
     });
+    print('init onNotification');
     wsService?.onNotification = (data) {
+      print('insert notification from ws');
       try {
         final notification = NotificationModel.fromJson(data);
 
@@ -62,7 +64,7 @@ class NotificationTabState extends State<NotificationTab> {
         Notifier.error(context, jsonData['detail']['message']);
       }
     } catch (e) {
-      Notifier.error(context, 'Lỗi tải thông báo: $e');
+      print(e);
       setState(() => isLoading = false);
     }
   }

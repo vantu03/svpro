@@ -16,9 +16,6 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => HomeScreenState();
 }
 
-
-WebSocketClient? wsService;
-
 class HomeScreenState extends State<HomeScreen> {
 
   final List<TabItem> tabs = [
@@ -38,9 +35,9 @@ class HomeScreenState extends State<HomeScreen> {
       if (LocalStorage.auth_token.isEmpty) {
         context.go('/login');
       } else {
-        wsService?.disconnect();
-        wsService = WebSocketClient();
-        wsService?.onLogout = () async {
+        wsService.connect("wss://api.sv.pro.vn/ws/");
+        //wsService.connect("ws://127.0.0.1:8000/ws/");
+        wsService.onLogout = () async {
           LocalStorage.auth_token = '';
           LocalStorage.schedule = {};
           await LocalStorage.push();
@@ -49,15 +46,13 @@ class HomeScreenState extends State<HomeScreen> {
             context.go('/login');
           }
         };
-        //wsService?.connect("wss://api.sv.pro.vn/ws/");
-        wsService?.connect("ws://127.0.0.1:8000/ws/");
       }
     });
   }
 
   @override
   void dispose() {
-    wsService?.disconnect();
+    wsService.disconnect();
     super.dispose();
   }
 

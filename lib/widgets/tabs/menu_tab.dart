@@ -9,6 +9,7 @@ import 'package:svpro/services/notification_scheduler.dart';
 import 'package:svpro/utils/dialog_helper.dart';
 import 'package:svpro/utils/notifier.dart';
 import 'package:svpro/widgets/tab_item.dart';
+import 'package:svpro/ws/ws_client.dart';
 
 class MenuTab extends StatefulWidget implements TabItem {
   const MenuTab({super.key});

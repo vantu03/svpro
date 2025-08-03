@@ -164,6 +164,7 @@ class LoginScreenState extends State<LoginScreen> {
       if (jsonData['detail']['status']) {
         LocalStorage.auth_token = jsonData['detail']['data']['token'];
         await LocalStorage.push();
+        print('success');
         if (mounted) {
           context.go('/home');
           Notifier.success(context, 'Đăng nhập thành công!');

@@ -5,7 +5,6 @@ import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_service.dart';
 import 'package:svpro/services/push_notification_service.dart';
 import 'package:go_router/go_router.dart';
-import 'package:svpro/utils/notifier.dart';
 
 class InitScreen extends StatefulWidget {
   const InitScreen({super.key});
@@ -22,66 +21,45 @@ class InitScreenState extends State<InitScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-        initApp();
+      initApp();
     });
   }
 
   Future<void> initApp() async {
-    InitScreen.initialized = true;
     print("🔁 initApp started");
 
     await LocalStorage.init();
-    if (mounted) {
-      setState(() => progress = 0.2);
-    }
-
     try {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
     } catch (e) {
-
-      if (mounted) {
-        Notifier.error(context, "Firebase init failed: $e");
-      }
       print("❌ Firebase init error: $e");
-    }
-
-    if (mounted) {
-      setState(() => progress = 0.5);
     }
 
     try {
       await NotificationService.instance.init();
     } catch (e) {
-
-      if (mounted) {
-        Notifier.error(context, "Notification init failed: $e");
-      }
       print("❌ Notification init error: $e");
-    }
-    if (mounted) {
-      setState(() => progress = 0.75);
     }
 
     try {
       await PushNotificationService().init();
     } catch (e) {
-
-      if (mounted) {
-        Notifier.error(context, "Push init failed: $e");
-      }
       print("❌ Push init error: $e");
     }
 
-    if (mounted) {
-      setState(() => progress = 1.0);
-    }
     await Future.delayed(const Duration(milliseconds: 100));
-
+    print('init complate...');
+    InitScreen.initialized = true;
     if (mounted) {
       context.go('/home');
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override

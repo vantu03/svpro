@@ -23,10 +23,8 @@ class WebSocketClient {
   }
 
   void connect(String url) {
-    if (isConnected || channel != null) {
-      print('[WS] Already connected or connecting.');
-      return;
-    }
+
+    disconnect();
 
     print('[WS] Connecting to $url ...');
     manuallyClosed = false;
@@ -95,12 +93,15 @@ class WebSocketClient {
       }
     });
   }
+
   void disconnect() {
     manuallyClosed = true;
     isConnected = false;
     try {
       channel?.sink.close();
     } catch (_) {}
+    pingTimer?.cancel();
+    pingTimer = null;
     channel = null;
   }
 
@@ -118,3 +119,5 @@ class WebSocketClient {
     }
   }
 }
+
+WebSocketClient wsService = WebSocketClient();
