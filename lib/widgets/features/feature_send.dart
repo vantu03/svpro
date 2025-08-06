@@ -27,14 +27,14 @@ class FeatureSendState extends State<FeatureSend> {
       backgroundColor: Colors.white,
       body:
         FutureBuilder(
-          future: Future.delayed(Duration(seconds: 5)),
+          future: Future.delayed(Duration(seconds: 1)),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
               return Center(child: Text('Đã xảy ra lỗi!'));
             } else {
-              return Center(child: Text('Đã gửi xong!'));
+              return Center(child: Text('Đang cập nhật...'));
             }
           },
         ),

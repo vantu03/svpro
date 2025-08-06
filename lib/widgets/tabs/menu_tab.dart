@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:svpro/screens/home_screen.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_scheduler.dart';
+import 'package:svpro/services/notification_service.dart';
 import 'package:svpro/utils/dialog_helper.dart';
 import 'package:svpro/utils/notifier.dart';
 import 'package:svpro/widgets/tab_item.dart';
@@ -21,7 +21,7 @@ class MenuTab extends StatefulWidget implements TabItem {
   IconData get icon => Icons.menu;
 
   @override
-  State<MenuTab> createState() => _MenuTabState();
+  State<MenuTab> createState() => MenuTabState();
 
   @override
   void onTab() {
@@ -30,7 +30,7 @@ class MenuTab extends StatefulWidget implements TabItem {
 
 }
 
-class _MenuTabState extends State<MenuTab> {
+class MenuTabState extends State<MenuTab> {
 
   @override
   Widget build(BuildContext context) {
@@ -102,20 +102,45 @@ class _MenuTabState extends State<MenuTab> {
               );
             },
           ),
+
+          const Divider(),
+
           ListTile(
-            leading: const Icon(Icons.bug_report, color: Colors.green),
-            title: const Text('Thêm thông báo test',
+            leading: const Icon(Icons.add_alert, color: Colors.green),
+            title: const Text('Thêm thông báo',
                 style: TextStyle(color: Colors.green)),
             onTap: () {
-              if (wsService?.isConnected ?? false) {
-                wsService!.send("add_test_notification", {});
+              if (wsService.isConnected) {
+                wsService.send("add_test_notification", {});
                 Notifier.success(context, "Đã gửi yêu cầu test qua socket.");
               } else {
                 Notifier.error(context, "Socket chưa kết nối.");
               }
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.add_alarm, color: Colors.green),
+            title: const Text('Kiểm tra thông báo',
+                style: TextStyle(color: Colors.green)),
+            onTap: () async {
+              final now = DateTime.now();
 
+              // Gửi thông báo ngay
+              await NotificationService().showNotification(
+                id: 999,
+                title: 'Test ngay',
+                body: 'Thông báo hiển thị ngay lập tức!',
+              );
+
+              // Gửi thông báo sau 5 giây
+              await NotificationService().scheduleNotification(
+                id: 1000,
+                title: 'Test sau 5s',
+                body: 'Thông báo được gửi sau 5 giây!',
+                scheduledDateTime: now.add(const Duration(seconds: 5)),
+              );
+            },
+          ),
         ],
       ),
     );

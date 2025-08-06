@@ -2,12 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:svpro/services/api_service.dart';
-import 'package:svpro/utils/notifier.dart';
 import 'package:svpro/widgets/feature_item.dart';
 import 'package:svpro/widgets/features/feature_send.dart';
 import 'package:svpro/widgets/features/feature_shipper.dart';
 import 'package:svpro/widgets/tab_item.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:svpro/ws/ws_client.dart';
 
 class HomeTab extends StatefulWidget implements TabItem {
   const HomeTab({super.key});
@@ -39,7 +39,9 @@ class HomeTabState extends State<HomeTab> {
   @override
   void initState() {
     super.initState();
-    loadBanners();
+    wsService.onLoadBanner = () async {
+      await loadBanners();
+    };
   }
 
 

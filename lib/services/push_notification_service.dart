@@ -6,7 +6,7 @@ import 'package:svpro/services/notification_service.dart';
 
 class PushNotificationService {
   final FirebaseMessaging messaging = FirebaseMessaging.instance;
-
+  static String fcm_token = '';
   Future<void> init() async {
     // Xin quyền nhận thông báo
     await messaging.requestPermission();
@@ -15,7 +15,7 @@ class PushNotificationService {
     final token = await messaging.getToken();
 
     if (token != null) {
-      LocalStorage.fcm_token = token;
+      PushNotificationService.fcm_token = token;
     }
 
     //Nhận thông báo khi app đang chạy (foreground)

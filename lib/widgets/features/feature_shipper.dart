@@ -59,10 +59,47 @@ class FeatureShipperState extends State<FeatureShipper> {
                   if (status == 'pending') {
                     return PendingApplicationWidget(application: application);
                   } else {
-                    return const ShipperRegisterForm(); // fallback
+
+                    final reason = application['reject_reason'] ?? 'Hồ sơ của bạn không được chấp nhận.';
+                    bool showForm = false;
+
+                    return StatefulBuilder(
+                      builder: (context, setState) {
+                        return SingleChildScrollView(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Hồ sơ của bạn đã bị từ chối',
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.red),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Lý do từ chối:',
+                                style: const TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(reason),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  setState(() {
+                                    showForm = !showForm;
+                                  });
+                                },
+                                icon: const Icon(Icons.add),
+                                label: Text("Cập nhật lại"),
+                              ),
+                              const SizedBox(height: 12),
+                              if (showForm) const ShipperRegisterForm(),
+                            ],
+                          ),
+                        );
+                      },
+                    );
                   }
                 } else {
-                  return const ShipperRegisterForm(); // chưa từng đăng ký
+                  return const ShipperRegisterForm();
                 }
               } else {
                 if (context.mounted) {

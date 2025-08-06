@@ -16,7 +16,9 @@ class WebSocketClient {
   Function()? onConnected;
   Function()? onDisconnected;
   Function(dynamic error)? onError;
-  Function(dynamic data)? onNotification;
+  Function(dynamic data)? onInsertNotification;
+  Function()? onLoadNotification;
+  Function()? onLoadBanner;
 
   WebSocketClient() {
     controller = WebSocketController(client: this);

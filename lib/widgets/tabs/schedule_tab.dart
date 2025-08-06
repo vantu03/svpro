@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:svpro/models/schedule.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_scheduler.dart';
+import 'package:svpro/services/notification_service.dart';
 import 'package:svpro/utils/notifier.dart';
 import 'package:svpro/widgets/schedule/schedule_display.dart';
 import 'package:svpro/widgets/tab_item.dart';
@@ -32,6 +34,21 @@ class ScheduleTabState extends State<ScheduleTab> {
   bool isLoading = false;
   late List<Schedule> events = [];
   late List<DateTime> days = [];
+  Timer? timer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    timer = Timer.periodic(const Duration(seconds: 1), (_) async {
+
+      if (mounted && !isLoading && LocalStorage.schedule.isNotEmpty &&
+          LocalStorage.lastUpdateTime != null &&
+          DateTime.now().difference(LocalStorage.lastUpdateTime!) > const Duration(minutes: 5)) {
+        await fetchSchedule();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +67,8 @@ class ScheduleTabState extends State<ScheduleTab> {
                 setState(() {
                   isLoading = true;
                 });
+
+                Notifier.info(context, 'Đang tải lịch học...');
                 await fetchSchedule();
                 setState(() {
                   isLoading = false;
@@ -81,6 +100,8 @@ class ScheduleTabState extends State<ScheduleTab> {
                           setState(() {
                             isLoading = true;
                           });
+
+                          Notifier.info(context, 'Đang tải lịch học...');
                           await fetchSchedule();
                           setState(() {
                             isLoading = false;
@@ -106,13 +127,20 @@ class ScheduleTabState extends State<ScheduleTab> {
 
   Future<void> fetchSchedule() async {
 
-    Notifier.info(context, 'Đang tải lịch học...');
-
     try {
       final response = await ApiService.getSchedule();
       var jsonData = jsonDecode(response.body);
       if (jsonData['detail']['status']) {
         LocalStorage.lastUpdateTime = DateTime.now();
+        if (LocalStorage.schedule.isNotEmpty &&
+            jsonEncode(LocalStorage.schedule) != jsonEncode(jsonData['detail']['data'])) {
+          await NotificationService().showNotification(
+            id: 1000,
+            title: 'Lịch có thay đổi',
+            body: 'Hãy chú ý lịch đã có một số thay đổi rồi.',
+          );
+        }
+
         LocalStorage.schedule = jsonData['detail']['data'];
         await NotificationScheduler.setupAllLearningNotifications();
         await LocalStorage.push();
@@ -126,7 +154,8 @@ class ScheduleTabState extends State<ScheduleTab> {
       }
     } catch (e){
       if (mounted) {
-        Notifier.error(context, 'Lỗi hệ thống: $e');
+        print(e);
+        Notifier.error(context, 'Lỗi kết nối');
       }
     }
   }

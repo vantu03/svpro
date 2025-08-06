@@ -15,8 +15,6 @@ class LocalStorage {
   static int notifyWeeklyHour = 20;
   static int notifyWeeklyMinute = 0;
 
-  static String fcm_token = '';
-
   /// ==== Load toàn bộ từ SharedPreferences vào RAM ====
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -36,7 +34,6 @@ class LocalStorage {
     notifyWeeklyHour = prefs.getInt('notifyWeeklyHour') ?? 20;
     notifyWeeklyMinute = prefs.getInt('notifyWeeklyMinute') ?? 0;
 
-    fcm_token = prefs.getString("fcm_token") ?? '';
   }
 
   /// ==== Lưu toàn bộ RAM vào SharedPreferences ====
@@ -58,7 +55,6 @@ class LocalStorage {
     await prefs.setInt('notifyWeeklyHour', notifyWeeklyHour);
     await prefs.setInt('notifyWeeklyMinute', notifyWeeklyMinute);
 
-    await prefs.setString('fcm_token', fcm_token);
   }
 
 }

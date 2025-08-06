@@ -15,6 +15,10 @@ class WebSocketController {
       case 'auth':
         client.send('auth', {'token': LocalStorage.auth_token});
         break;
+      case 'auth_done':
+        await client.onLoadBanner?.call();
+        await client.onLoadNotification?.call();
+        break;
       case 'logout':
         await client.onLogout?.call();
         break;
@@ -22,7 +26,7 @@ class WebSocketController {
         await client.onLogout?.call();
         break;
       case 'notification':
-        await client.onNotification?.call(payload);
+        await client.onInsertNotification?.call(payload);
         break;
     }
   }

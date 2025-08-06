@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:svpro/models/notification.dart';
@@ -5,6 +6,7 @@ import 'package:svpro/services/api_service.dart';
 import 'package:svpro/widgets/tab_item.dart';
 import 'package:svpro/utils/notifier.dart';
 import 'package:svpro/ws/ws_client.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class NotificationTab extends StatefulWidget implements TabItem {
   const NotificationTab({super.key});
@@ -27,16 +29,19 @@ class NotificationTab extends StatefulWidget implements TabItem {
 class NotificationTabState extends State<NotificationTab> {
   List<NotificationModel> notifications = [];
   bool isLoading = true;
+  Timer? timer;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      loadNotifications();
-    });
-    print('init onNotification');
-    wsService?.onNotification = (data) {
-      print('insert notification from ws');
+
+    timeago.setLocaleMessages('vi', timeago.ViMessages());
+
+    wsService.onLoadNotification = () async {
+      await loadNotifications();
+    };
+
+    wsService.onInsertNotification = (data) {
       try {
         final notification = NotificationModel.fromJson(data);
 
@@ -47,6 +52,10 @@ class NotificationTabState extends State<NotificationTab> {
         debugPrint(' Lỗi khi xử lý thông báo từ socket: $e');
       }
     };
+
+    timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      if (mounted) setState(() {});
+    });
   }
 
   Future<void> loadNotifications() async {
@@ -100,8 +109,19 @@ class NotificationTabState extends State<NotificationTab> {
           return ListTile(
             leading: Icon(item.isRead ? Icons.mark_email_read : Icons.mark_email_unread, color: Colors.blue),
             title: Text(item.title),
-            subtitle: Text(item.content),
-            trailing: Text(item.createdAt.split("T").first),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(item.content),
+                const SizedBox(height: 4),
+                Text(
+                  timeago.format(DateTime.parse(item.createdAt), locale: 'vi'),
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
+            ),
+
+            //trailing: Text(timeago.format(DateTime.parse(item.createdAt), locale: 'vi')),
             onTap: () {
               // Tùy ý xử lý đọc chi tiết
             },
