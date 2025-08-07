@@ -103,6 +103,7 @@ class MenuTabState extends State<MenuTab> {
             },
           ),
 
+          /*
           const Divider(),
 
           ListTile(
@@ -141,6 +142,7 @@ class MenuTabState extends State<MenuTab> {
               );
             },
           ),
+          */
         ],
       ),
     );

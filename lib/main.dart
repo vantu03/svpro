@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:svpro/screens/home_screen.dart';
 import 'package:svpro/screens/login_screen.dart';
@@ -17,6 +18,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+
+      locale: const Locale('vi'),
+      supportedLocales: const [
+        Locale('vi'),
+        Locale('en'),
+      ],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+
       routerConfig: GoRouter(
         initialLocation: '/',
         routes: [

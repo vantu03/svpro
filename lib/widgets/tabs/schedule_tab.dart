@@ -42,10 +42,19 @@ class ScheduleTabState extends State<ScheduleTab> {
 
     timer = Timer.periodic(const Duration(seconds: 1), (_) async {
 
-      if (mounted && !isLoading && LocalStorage.schedule.isNotEmpty &&
+      if (mounted &&
+          !isLoading &&
+          LocalStorage.schedule.isNotEmpty &&
           LocalStorage.lastUpdateTime != null &&
-          DateTime.now().difference(LocalStorage.lastUpdateTime!) > const Duration(minutes: 5)) {
+          DateTime.now().difference(LocalStorage.lastUpdateTime!) > const Duration(minutes: 5)
+      ) {
+        setState(() {
+          isLoading = true;
+        });
         await fetchSchedule();
+        setState(() {
+          isLoading = false;
+        });
       }
     });
   }
