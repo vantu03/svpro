@@ -149,4 +149,12 @@ class ApiService {
       headers: authHeaders,
     );
   }
+
+  static Future<http.Response> getInfo() async {
+    final uri = Uri.parse('$baseUrl/user');
+    return await http.get(
+      uri,
+      headers: authHeaders,
+    );
+  }
 }

@@ -12,7 +12,7 @@ class FeatureShipper extends StatefulWidget implements FeatureItem {
   const FeatureShipper({super.key});
 
   @override
-  String get label => 'Shipper';
+  String get label => 'Shipper sinh viên';
 
   @override
   IconData get icon => Icons.delivery_dining;

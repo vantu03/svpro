@@ -10,12 +10,14 @@ import 'package:table_calendar/table_calendar.dart';
 
 class ScheduleDisplay extends StatefulWidget {
 
+  static bool isInitialized = false;
+
   const ScheduleDisplay({super.key});
 
   @override
   State<ScheduleDisplay> createState() => ScheduleDisplayState();
-}
 
+}
 
 DateTime normalizeDate(DateTime d) => DateTime(d.year, d.month, d.day);
 
@@ -35,8 +37,6 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
   @override
   void initState() {
     super.initState();
-    initSchedule();
-
     itemPositionsListener.itemPositions.addListener(onScroll);
   }
 
@@ -69,11 +69,9 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
   }
 
   void initSchedule() {
-    firstDay = lastDay = today.add(const Duration(days: -365 * 4));//DateFormat('dd/MM/yyyy').parse(LocalStorage.schedule['startDate']);
-    lastDay = lastDay = today.add(const Duration(days: 365 * 4));//DateFormat('dd/MM/yyyy').parse(LocalStorage.schedule['endDate']);
+    firstDay = lastDay = today.add(const Duration(days: -365 * 5));//DateFormat('dd/MM/yyyy').parse(LocalStorage.schedule['startDate']);
+    lastDay = lastDay = today.add(const Duration(days: 365));//DateFormat('dd/MM/yyyy').parse(LocalStorage.schedule['endDate']);
 
-    if (lastDay.isBefore(today)) {
-    }
     events = (LocalStorage.schedule['schedule'] as List)
         .map((e) => Schedule.fromJson(e))
         .toList();
@@ -110,6 +108,12 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
 
   @override
   Widget build(BuildContext context) {
+
+    if (!ScheduleDisplay.isInitialized) {
+      initSchedule();
+      ScheduleDisplay.isInitialized = true;
+    }
+
     return Stack(
       children: [
         Column(

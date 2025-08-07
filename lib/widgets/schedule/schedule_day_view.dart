@@ -26,7 +26,7 @@ class ScheduleDayView extends StatelessWidget {
             children: [
               Text(
                 DateFormat('d').format(date),
-                style: const TextStyle(fontSize: 26),
+                style: const TextStyle(fontSize: 22),
               ),
               const SizedBox(height: 4),
               Text(

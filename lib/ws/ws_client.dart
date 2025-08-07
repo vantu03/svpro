@@ -18,7 +18,7 @@ class WebSocketClient {
   Function(dynamic error)? onError;
   Function(dynamic data)? onInsertNotification;
   Function()? onLoadNotification;
-  Function()? onLoadBanner;
+  Function()? onLoadHome;
 
   WebSocketClient() {
     controller = WebSocketController(client: this);

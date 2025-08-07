@@ -143,6 +143,7 @@ class ScheduleTabState extends State<ScheduleTab> {
         LocalStorage.lastUpdateTime = DateTime.now();
         if (LocalStorage.schedule.isNotEmpty &&
             jsonEncode(LocalStorage.schedule) != jsonEncode(jsonData['detail']['data'])) {
+          ScheduleDisplay.isInitialized = false;
           await NotificationService().showNotification(
             id: 1000,
             title: 'Lịch có thay đổi',

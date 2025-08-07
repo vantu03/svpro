@@ -1,6 +1,6 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:svpro/models/user.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/widgets/feature_item.dart';
 import 'package:svpro/widgets/features/feature_send.dart';
@@ -13,7 +13,7 @@ class HomeTab extends StatefulWidget implements TabItem {
   const HomeTab({super.key});
 
   @override
-  String get label => 'Trang chủ';
+  String get label => 'SVPro';
 
   @override
   IconData get icon => Icons.home;
@@ -22,16 +22,16 @@ class HomeTab extends StatefulWidget implements TabItem {
   State<HomeTab> createState() => HomeTabState();
 
   @override
-  void onTab() {
-
-  }
+  void onTab() {}
 }
 
 class HomeTabState extends State<HomeTab> {
   final List<FeatureItem> features = const [
-    FeatureSend(),
+    //FeatureSend(),
     FeatureShipper(),
   ];
+
+  UserModel? user;
 
   List<String> banners = [];
   bool isLoading = true;
@@ -39,12 +39,26 @@ class HomeTabState extends State<HomeTab> {
   @override
   void initState() {
     super.initState();
-    wsService.onLoadBanner = () async {
+    wsService.onLoadHome = () async {
       await loadBanners();
+      await loadUserInfo();
     };
   }
 
+  Future<void> loadUserInfo() async {
+    try {
+      final response = await ApiService.getUser();
+      final jsonData = jsonDecode(response.body);
 
+      if (jsonData['detail']['status']) {
+        setState(() {
+          user = UserModel.fromJson(jsonData['detail']['data']);
+        });
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
   Future<void> loadBanners() async {
     try {
       final response = await ApiService.getBanners();
@@ -57,7 +71,9 @@ class HomeTabState extends State<HomeTab> {
           isLoading = false;
         });
       } else {
-
+        setState(() {
+          isLoading = false;
+        });
       }
     } catch (e) {
       setState(() {
@@ -69,10 +85,10 @@ class HomeTabState extends State<HomeTab> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(widget.label,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.blueAccent,
         centerTitle: false,
       ),
@@ -84,12 +100,14 @@ class HomeTabState extends State<HomeTab> {
           children: [
             bannerSlider(),
             const SizedBox(height: 24),
+            userInfoCard(),
+            const SizedBox(height: 24),
             const Text(
-              'Tiện ích',
+              'Tiện ích sinh viên',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            featureGrid()
+            featureGrid(),
           ],
         ),
       ),
@@ -97,26 +115,72 @@ class HomeTabState extends State<HomeTab> {
   }
 
   Widget bannerSlider() {
+    if (isLoading) {
+      return const SizedBox(
+        height: 160,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return SizedBox(
       height: 160,
       child: PageView.builder(
         itemCount: banners.length,
         itemBuilder: (context, index) => Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: CachedNetworkImage(
-              imageUrl: banners[index],
-              width: double.infinity,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-              errorWidget: (context, url, error) => const Icon(Icons.broken_image, size: 48, color: Colors.grey),
-            ),
+          child: CachedNetworkImage(
+            imageUrl: banners[index],
+            width: double.infinity,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+            errorWidget: (context, url, error) =>
+            const Icon(Icons.broken_image, size: 48, color: Colors.grey),
           ),
         ),
       ),
     );
   }
+
+  Widget userInfoCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const CircleAvatar(
+            radius: 36,
+            backgroundColor: Colors.orange,
+            child: Icon(Icons.person, size: 36, color: Colors.white),
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                user?.fullName ?? 'Xin chào',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              Text(
+                user?.username.toUpperCase() ?? '',
+                style: const TextStyle(color: Colors.grey),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
 
   Widget featureGrid() {
     return Wrap(
@@ -127,13 +191,11 @@ class HomeTabState extends State<HomeTab> {
           onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (_) => item as Widget));
           },
-          borderRadius: BorderRadius.circular(16),
           child: Container(
             width: 100,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
                   color: Colors.grey.withOpacity(0.15),

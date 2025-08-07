@@ -16,7 +16,7 @@ class WebSocketController {
         client.send('auth', {'token': LocalStorage.auth_token});
         break;
       case 'auth_done':
-        await client.onLoadBanner?.call();
+        await client.onLoadHome?.call();
         await client.onLoadNotification?.call();
         break;
       case 'logout':
