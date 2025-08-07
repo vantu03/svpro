@@ -24,9 +24,10 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
   late List<Schedule> events = [];
   late List<DateTime> days = [];
 
-  DateTime firstDay = normalizeDate(DateTime.now());
-  DateTime lastDay = normalizeDate(DateTime.now()).add(Duration(days: 7));
-  DateTime focusedDay = normalizeDate(DateTime.now());
+  static final DateTime today = normalizeDate(DateTime.now());
+  DateTime firstDay = today;
+  DateTime lastDay = today.add(Duration(days: 7));
+  DateTime focusedDay = today;
 
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
@@ -38,43 +39,25 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
 
     itemPositionsListener.itemPositions.addListener(onScroll);
   }
+
   void onScroll() {
     final positions = itemPositionsListener.itemPositions.value;
     if (positions.isEmpty) return;
 
-    // 1. Chỉ xét các item đang "visible: true"
-    final visiblePositions = positions.where((position) {
-      final date = days[position.index];
-      final now = normalizeDate(DateTime.now());
+    final topItem = positions.reduce((a, b) => a.itemLeadingEdge < b.itemLeadingEdge ? a : b);
 
-      // Tính toán lại logic visible giống như bên ScheduleDayView
-      return normalizeDate(date) == normalizeDate(focusedDay) ||
-          !(date.isBefore(focusedDay) && date.isBefore(now));
-    }).toList();
-
-    if (visiblePositions.isEmpty) return;
-
-    // 2. Lấy item đang ở trên cùng
-    final topVisibleIndex = visiblePositions
-        .reduce((a, b) => a.itemLeadingEdge < b.itemLeadingEdge ? a : b)
-        .index;
-
-    final scrolledDay = days[topVisibleIndex];
-
-    // 3. Nếu khác ngày hiện tại thì cập nhật focus
+    final scrolledDay = days[topItem.index];
     if (!isSameDay(scrolledDay, focusedDay)) {
       setState(() {
         focusedDay = scrolledDay;
       });
     }
 
-    // 4. Add thêm ngày nếu cần
     final maxIndex = positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
     if (maxIndex >= days.length - 1) {
       addMoreDays();
     }
   }
-
 
   void addMoreDays() {
     final newDays = List.generate(7, (i) => lastDay.add(Duration(days: i + 1)),);
@@ -86,76 +69,111 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
   }
 
   void initSchedule() {
-    final now = normalizeDate(DateTime.now());
-    firstDay = DateFormat('dd/MM/yyyy').parse(LocalStorage.schedule['startDate']);
-    lastDay = DateFormat('dd/MM/yyyy').parse(LocalStorage.schedule['endDate']);
+    firstDay = lastDay = today.add(const Duration(days: -365 * 4));//DateFormat('dd/MM/yyyy').parse(LocalStorage.schedule['startDate']);
+    lastDay = lastDay = today.add(const Duration(days: 365 * 4));//DateFormat('dd/MM/yyyy').parse(LocalStorage.schedule['endDate']);
 
-    if (lastDay.isBefore(now)) {
-      lastDay = now.add(const Duration(days: 30));
+    if (lastDay.isBefore(today)) {
     }
     events = (LocalStorage.schedule['schedule'] as List)
         .map((e) => Schedule.fromJson(e))
         .toList();
     days = List.generate(
-      lastDay.difference(firstDay).inDays + 1,
-          (i) => firstDay.add(Duration(days: i)),
+      lastDay.difference(today).inDays + 1,
+          (i) => today.add(Duration(days: i)),
     );
     NotificationScheduler.setupAllLearningNotifications();
   }
 
   void jumpToDate(DateTime date) {
-    final index = days.indexWhere((d) => normalizeDate(d) == normalizeDate(date));
+    final normalized = normalizeDate(date);
+
+    if (normalized.isBefore(days.first)) {
+      final daysToAdd = days.first.difference(normalized).inDays;
+
+      final newDays = List.generate(
+        daysToAdd,
+            (i) => normalized.add(Duration(days: i)),
+      );
+
+      setState(() {
+        days.insertAll(0, newDays);
+      });
+
+    }
+    // Nếu ngày đã tồn tại rồi thì scroll luôn
+    int index = days.indexWhere((d) => d == normalized);
     if (index != -1 && itemScrollController.isAttached) {
       itemScrollController.jumpTo(index: index);
+      return;
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Stack(
       children: [
-        ScheduleCalendar(
-          firstDay: firstDay,
-          lastDay: lastDay,
-          focusedDay: focusedDay,
-          selectedDay: focusedDay,
-          events: events,
-          onDaySelected: (selected) {
-            setState(() {
-              focusedDay = selected;
-            });
-            jumpToDate(selected);
-          },
+        Column(
+          children: [
+            Container(
+              color: Color(0xFFE0EBFA),
+              child: ScheduleCalendar(
+                firstDay: firstDay,
+                lastDay: lastDay,
+                focusedDay: focusedDay,
+                selectedDay: focusedDay,
+                events: events,
+                onDaySelected: (selected) {
+                  setState(() {
+                    focusedDay = selected;
+                  });
+                  jumpToDate(selected);
+                },
+              ),
+            ),
+            Expanded(
+              child: ScrollablePositionedList.builder(
+                itemScrollController: itemScrollController,
+                itemPositionsListener: itemPositionsListener,
+                itemCount: days.length,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                itemBuilder: (context, index) {
+                  final date = days[index];
+                  final filtered = events.where(
+                        (e) => e.date == DateFormat('dd/MM/yyyy').format(date),
+                  ).toList();
+
+                  return ScheduleDayView(
+                    date: date,
+                    schedules: filtered,
+                  );
+                },
+              ),
+            ),
+          ],
         ),
 
-        Expanded(
-          child: ScrollablePositionedList.builder(
-            itemScrollController: itemScrollController,
-            itemPositionsListener: itemPositionsListener,
-            itemCount: days.length,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-            itemBuilder: (context, index) {
-              final date = days[index];
-              final filtered = events.where(
-                    (e) => e.date == DateFormat('dd/MM/yyyy').format(date),
-              ).toList();
-
-              return ScheduleDayView(
-                date: date,
-                schedules: filtered,
-                visible: normalizeDate(date) == normalizeDate(focusedDay) ||
-                    !(date.isBefore(focusedDay) && date.isBefore(normalizeDate(DateTime.now()))),
-              );
-            },
+        if (!isSameDay(focusedDay, today))
+          Positioned(
+            bottom: 16,
+            right: 16,
+            child: FloatingActionButton(
+              backgroundColor: Colors.white,
+              mini: true,
+              tooltip: 'Lịch hiện tại',
+              onPressed: () {
+                setState(() {
+                  focusedDay = today;
+                });
+                jumpToDate(today);
+              },
+              child: const Icon(
+                Icons.explore,
+                color: Colors.blue,
+              ),
+            ),
           ),
-        ),
-
       ],
     );
-
-
   }
-
 
 }

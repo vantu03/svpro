@@ -48,7 +48,7 @@ class ScheduleCalendarState extends State<ScheduleCalendar> {
           calendarFormat: calendarFormat,
 
           startingDayOfWeek: StartingDayOfWeek.monday,
-          headerVisible: calendarFormat == CalendarFormat.month,
+          headerVisible: calendarFormat != CalendarFormat.week,
           eventLoader: (day) {
             final formatted = DateFormat('dd/MM/yyyy').format(day);
             return widget.events
@@ -56,6 +56,11 @@ class ScheduleCalendarState extends State<ScheduleCalendar> {
                 .toList();
           },
 
+          onFormatChanged: (format) {
+            setState(() {
+              calendarFormat = format;
+            });
+          },
           selectedDayPredicate: (day) => isSameDay(widget.selectedDay, day),
 
 
@@ -64,7 +69,7 @@ class ScheduleCalendarState extends State<ScheduleCalendar> {
           },
 
           onPageChanged: (day) {
-            widget.onDaySelected?.call(day);
+
           },
           calendarBuilders: CalendarBuilders(
             markerBuilder: (context, date, eventsForDay) {

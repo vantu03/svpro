@@ -41,12 +41,14 @@ class ItemContentState extends State<ItemContent> {
       ),
       child: widget.event == null
           ? const Center(
+        heightFactor: 2,
         child: Text(
           'Bạn rảnh...',
           style: TextStyle(
               color: Colors.white,
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: FontWeight.bold),
+
         ),
       )
           : GestureDetector(
