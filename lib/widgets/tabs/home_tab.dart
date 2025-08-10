@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:svpro/models/user.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/widgets/feature_item.dart';
-import 'package:svpro/widgets/features/feature_send.dart';
 import 'package:svpro/widgets/features/feature_shipper.dart';
 import 'package:svpro/widgets/tab_item.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -40,9 +39,13 @@ class HomeTabState extends State<HomeTab> {
   void initState() {
     super.initState();
     wsService.onLoadHome = () async {
-      await loadBanners();
-      await loadUserInfo();
+      await handleRefresh();
     };
+  }
+
+  Future<void> handleRefresh() async {
+    await loadBanners();
+    await loadUserInfo();
   }
 
   Future<void> loadUserInfo() async {
@@ -59,6 +62,7 @@ class HomeTabState extends State<HomeTab> {
       print(e);
     }
   }
+
   Future<void> loadBanners() async {
     try {
       final response = await ApiService.getBanners();
@@ -93,22 +97,28 @@ class HomeTabState extends State<HomeTab> {
         centerTitle: false,
       ),
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            bannerSlider(),
-            const SizedBox(height: 24),
-            userInfoCard(),
-            const SizedBox(height: 24),
-            const Text(
-              'Tiện ích sinh viên',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            featureGrid(),
-          ],
+      body: RefreshIndicator(
+        onRefresh: handleRefresh,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(10),
+          physics: AlwaysScrollableScrollPhysics(),
+
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              bannerSlider(),
+              const SizedBox(height: 24),
+              userInfoCard(),
+              const SizedBox(height: 24),
+              const Text(
+                'Tiện ích sinh viên',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              featureGrid(),
+              const SizedBox(height: 100),
+            ],
+          ),
         ),
       ),
     );
@@ -146,10 +156,9 @@ class HomeTabState extends State<HomeTab> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withOpacity(0.2),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),

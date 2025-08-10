@@ -1,8 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:svpro/models/schedule.dart';
 import 'package:intl/intl.dart';
 import 'package:svpro/services/local_storage.dart';
-import 'package:svpro/services/notification_scheduler.dart';
 import 'package:svpro/widgets/schedule/schedule_calendar.dart';
 import 'package:svpro/widgets/schedule/schedule_day_view.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -28,8 +29,10 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
 
   static final DateTime today = normalizeDate(DateTime.now());
   DateTime firstDay = today;
-  DateTime lastDay = today.add(Duration(days: 7));
+  DateTime lastDay = today.add(Duration(days: 30));
   DateTime focusedDay = today;
+  Timer? timer;
+  int lastScroll = 0;
 
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
@@ -37,7 +40,15 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
   @override
   void initState() {
     super.initState();
-    itemPositionsListener.itemPositions.addListener(onScroll);
+    timer = Timer.periodic(const Duration(milliseconds: 500), (_) {
+      onScroll();
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    timer?.cancel();
   }
 
   void onScroll() {
@@ -69,8 +80,8 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
   }
 
   void initSchedule() {
-    firstDay = lastDay = today.add(const Duration(days: -365 * 5));//DateFormat('dd/MM/yyyy').parse(LocalStorage.schedule['startDate']);
-    lastDay = lastDay = today.add(const Duration(days: 365));//DateFormat('dd/MM/yyyy').parse(LocalStorage.schedule['endDate']);
+    firstDay = today.add(const Duration(days: -365 * 4));//DateFormat('dd/MM/yyyy').parse(LocalStorage.schedule['startDate']);
+    lastDay = today.add(const Duration(days: 365));//DateFormat('dd/MM/yyyy').parse(LocalStorage.schedule['endDate']);
 
     events = (LocalStorage.schedule['schedule'] as List)
         .map((e) => Schedule.fromJson(e))
@@ -79,7 +90,6 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
       lastDay.difference(today).inDays + 1,
           (i) => today.add(Duration(days: i)),
     );
-    NotificationScheduler.setupAllLearningNotifications();
   }
 
   void jumpToDate(DateTime date) {
@@ -108,18 +118,26 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
 
   @override
   Widget build(BuildContext context) {
-
     if (!ScheduleDisplay.isInitialized) {
       initSchedule();
       ScheduleDisplay.isInitialized = true;
     }
-
     return Stack(
       children: [
         Column(
           children: [
             Container(
-              color: Color(0xFFE0EBFA),
+
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+
               child: ScheduleCalendar(
                 firstDay: firstDay,
                 lastDay: lastDay,
@@ -134,6 +152,7 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
                 },
               ),
             ),
+
             Expanded(
               child: ScrollablePositionedList.builder(
                 itemScrollController: itemScrollController,

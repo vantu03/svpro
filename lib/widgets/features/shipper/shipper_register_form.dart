@@ -63,7 +63,7 @@ class _ShipperRegisterFormState extends State<ShipperRegisterForm> {
         Notifier.error(context, jsonData['detail']['message']);
       }Navigator.pop(context, true);
     } catch (e) {
-      Notifier.error(context, 'Đã xảy ra lỗi: $e');
+      Notifier.error(context, 'Không thể kết nối tới máy chủ');
     }
   }
 

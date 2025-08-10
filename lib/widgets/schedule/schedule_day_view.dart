@@ -3,6 +3,19 @@ import 'package:intl/intl.dart';
 import 'package:svpro/models/schedule.dart';
 import 'package:svpro/widgets/schedule/schedule_day_item.dart';
 
+
+Color getColorByDate(DateTime date) {
+  final now = DateTime.now();
+  final d = DateTime(now.year, now.month, now.day);
+  final target = DateTime(date.year, date.month, date.day);
+  final diff = target.difference(d).inDays;
+
+  if (diff < 0) return Colors.grey; // Past
+  if (diff == 0) return Colors.orange; // Today
+  if (diff == 1) return Colors.purple; // Tomorrow
+  return  Colors.teal; // Future
+}
+
 class ScheduleDayView extends StatelessWidget {
   final DateTime date;
   final List<Schedule> schedules;
@@ -21,25 +34,22 @@ class ScheduleDayView extends StatelessWidget {
         // Cột trái: ngày và thứ
         Container(
           padding: const EdgeInsets.only(top: 8.0),
-          width: 35,
+          width: 40,
           child: Column(
             children: [
               Text(
                 DateFormat('d').format(date),
-                style: const TextStyle(fontSize: 22),
+                style: TextStyle(fontSize: 22, color: getColorByDate(date)),
               ),
-              const SizedBox(height: 4),
               Text(
                 ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.weekday % 7],
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: 16, color: getColorByDate(date)
                 ),
               ),
             ],
           ),
         ),
-
-        const SizedBox(width: 8),
 
         // Cột phải: danh sách lịch học
         Expanded(

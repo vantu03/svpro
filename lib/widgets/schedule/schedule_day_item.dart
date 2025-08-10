@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:svpro/models/schedule.dart';
+import 'package:svpro/widgets/schedule/schedule_day_view.dart';
 
 class ItemContent extends StatefulWidget {
   final Schedule? event;
@@ -18,25 +19,13 @@ class ItemContent extends StatefulWidget {
 class ItemContentState extends State<ItemContent> {
   bool isExpanded = false;
 
-  Color getBackgroundColor() {
-    final now = DateTime.now();
-    final d = DateTime(now.year, now.month, now.day);
-    final target = DateTime(widget.date.year, widget.date.month, widget.date.day);
-    final diff = target.difference(d).inDays;
-
-    if (diff < 0) return const Color(0xFFCCCCCC); // Past
-    if (diff == 0) return const Color(0xFFECB472); // Today
-    if (diff == 1) return const Color(0xFF9968B5); // Tomorrow
-    return const Color(0xFF6ABAA3); // Future
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
-        color: getBackgroundColor(),
+        color: getColorByDate(widget.date),
         borderRadius: BorderRadius.circular(8.0),
       ),
       child: widget.event == null

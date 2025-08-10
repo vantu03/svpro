@@ -67,7 +67,16 @@ class ScheduleTabState extends State<ScheduleTab> {
         backgroundColor: Colors.blueAccent,
         actions: [
           if (isLoading) ...[
-            const CircularProgressIndicator()
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                ),
+              ),
+            ),
           ] else ...[
             IconButton(
               icon: const Icon(Icons.sync),
@@ -86,6 +95,7 @@ class ScheduleTabState extends State<ScheduleTab> {
             ),
           ],
         ],
+
         centerTitle: false,
       ),
 
@@ -143,13 +153,13 @@ class ScheduleTabState extends State<ScheduleTab> {
         LocalStorage.lastUpdateTime = DateTime.now();
         if (LocalStorage.schedule.isNotEmpty &&
             jsonEncode(LocalStorage.schedule) != jsonEncode(jsonData['detail']['data'])) {
-          ScheduleDisplay.isInitialized = false;
           await NotificationService().showNotification(
             id: 1000,
             title: 'Lịch có thay đổi',
             body: 'Hãy chú ý lịch đã có một số thay đổi rồi.',
           );
         }
+        ScheduleDisplay.isInitialized = false;
 
         LocalStorage.schedule = jsonData['detail']['data'];
         await NotificationScheduler.setupAllLearningNotifications();
@@ -163,10 +173,7 @@ class ScheduleTabState extends State<ScheduleTab> {
         }
       }
     } catch (e){
-      if (mounted) {
-        print(e);
-        Notifier.error(context, 'Lỗi kết nối');
-      }
+      print(e);
     }
   }
 

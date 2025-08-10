@@ -58,6 +58,11 @@ class NotificationTabState extends State<NotificationTab> {
     });
   }
 
+
+  Future<void> handleRefresh() async {
+    await loadNotifications();
+  }
+
   Future<void> loadNotifications() async {
     try {
       final response = await ApiService.getNotifications();
@@ -102,31 +107,34 @@ class NotificationTabState extends State<NotificationTab> {
           ],
         ),
       )
-          : ListView.builder(
-        itemCount: notifications.length,
-        itemBuilder: (context, index) {
-          final item = notifications[index];
-          return ListTile(
-            leading: Icon(item.isRead ? Icons.mark_email_read : Icons.mark_email_unread, color: Colors.blue),
-            title: Text(item.title),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(item.content),
-                const SizedBox(height: 4),
-                Text(
-                  timeago.format(DateTime.parse(item.createdAt), locale: 'vi'),
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+          : RefreshIndicator(
+            onRefresh: handleRefresh,
+            child: ListView.builder(
+            itemCount: notifications.length,
+            itemBuilder: (context, index) {
+              final item = notifications[index];
+              return ListTile(
+                leading: Icon(item.isRead ? Icons.mark_email_read : Icons.mark_email_unread, color: Colors.blue),
+                title: Text(item.title),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item.content),
+                    const SizedBox(height: 4),
+                    Text(
+                      timeago.format(DateTime.parse(item.createdAt), locale: 'vi'),
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
                 ),
-              ],
-            ),
 
-            //trailing: Text(timeago.format(DateTime.parse(item.createdAt), locale: 'vi')),
-            onTap: () {
-              // Tùy ý xử lý đọc chi tiết
+                //trailing: Text(timeago.format(DateTime.parse(item.createdAt), locale: 'vi')),
+                onTap: () {
+                  // Tùy ý xử lý đọc chi tiết
+                },
+              );
             },
-          );
-        },
+          ),
       ),
     );
   }

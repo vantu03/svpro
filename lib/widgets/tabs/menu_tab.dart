@@ -5,11 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_scheduler.dart';
-import 'package:svpro/services/notification_service.dart';
 import 'package:svpro/utils/dialog_helper.dart';
 import 'package:svpro/utils/notifier.dart';
 import 'package:svpro/widgets/tab_item.dart';
-import 'package:svpro/ws/ws_client.dart';
 
 class MenuTab extends StatefulWidget implements TabItem {
   const MenuTab({super.key});
@@ -83,8 +81,9 @@ class MenuTabState extends State<MenuTab> {
                       }
                     }
                   } catch (e) {
+                    print(e);
                     if (context.mounted) {
-                      Notifier.error(context, 'Lỗi hệ thống: $e');
+                      Notifier.error(context, 'Không thể kết nối tới máy chủ');
                     }
                   } finally {
 

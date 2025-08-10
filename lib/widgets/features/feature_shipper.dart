@@ -107,9 +107,7 @@ class FeatureShipperState extends State<FeatureShipper> {
                 }
               }
             } catch (e) {
-              if (context.mounted) {
-                Notifier.error(context, 'Lỗi hệ thống: $e');
-              }
+              print(e);
             }
             return const Center(child: Text('Không thể tải dữ liệu.'));
           }

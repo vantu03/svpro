@@ -46,6 +46,28 @@ class ScheduleCalendarState extends State<ScheduleCalendar> {
           firstDay: widget.firstDay,
           lastDay: widget.lastDay,
           calendarFormat: calendarFormat,
+          calendarStyle: CalendarStyle(
+            selectedDecoration: BoxDecoration(
+              color: Colors.blue,
+              shape: BoxShape.circle,
+            ),
+            todayDecoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.blue,
+                width: 1,
+              ),
+            ),
+            todayTextStyle: TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+            ),
+
+
+            defaultTextStyle: TextStyle(color: Colors.black),
+            weekendTextStyle: TextStyle(color: Colors.red),
+            selectedTextStyle: TextStyle(color: Colors.white),
+          ),
 
           startingDayOfWeek: StartingDayOfWeek.monday,
           headerVisible: calendarFormat != CalendarFormat.week,
@@ -76,17 +98,17 @@ class ScheduleCalendarState extends State<ScheduleCalendar> {
               if (eventsForDay.isEmpty) return const SizedBox.shrink();
 
               return Positioned(
-                bottom: 1,
+                bottom: 0,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(
-                    eventsForDay.length.clamp(0, 4),
+                    eventsForDay.length,
                         (index) => Container(
                       margin: const EdgeInsets.symmetric(horizontal: 1),
                       width: 5,
                       height: 5,
                       decoration: const BoxDecoration(
-                        color: Colors.deepOrange,
+                        color: Colors.blue,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -97,34 +119,34 @@ class ScheduleCalendarState extends State<ScheduleCalendar> {
           ),
         ),
 
-        // Toggle Hiện thêm / Ẩn bớt
         Center(
-          child: InkWell(
-            onTap: () {
+          child: IconButton(
+            onPressed: () {
               setState(() {
                 calendarFormat = isMonth
                     ? CalendarFormat.week
                     : CalendarFormat.month;
               });
             },
-            child: Row(
+            icon: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Text(
+                  isMonth ? 'Ẩn bớt' : 'Hiện thêm', style: TextStyle(color: Colors.blue),
+                ),
+                const SizedBox(width: 4),
                 Icon(
                   isMonth
                       ? Icons.keyboard_arrow_up
                       : Icons.keyboard_arrow_down,
                   size: 20,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  isMonth ? 'Ẩn bớt' : 'Hiện thêm',
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                  color: Colors.blue,
                 ),
               ],
             ),
           ),
-        ),
+        )
+
       ],
     );
   }

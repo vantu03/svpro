@@ -35,8 +35,8 @@ class HomeScreenState extends State<HomeScreen> {
       if (LocalStorage.auth_token.isEmpty) {
         context.go('/login');
       } else {
-        wsService.connect("wss://api.sv.pro.vn/ws/");
-        //wsService.connect("ws://127.0.0.1:8000/ws/");
+        //wsService.connect("wss://api.sv.pro.vn/ws/");
+        wsService.connect("ws://127.0.0.1:8000/ws/");
         wsService.onLogout = () async {
           LocalStorage.auth_token = '';
           LocalStorage.schedule = {};

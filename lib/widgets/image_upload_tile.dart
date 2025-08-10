@@ -56,7 +56,8 @@ class ImageUploadTileState extends State<ImageUploadTile> {
             context, 'Upload thất bại: ${jsonData['detail']['message']}');
       }
     } catch (e) {
-      Notifier.error(context, 'Lỗi upload: $e');
+      print(e);
+      Notifier.error(context, 'Không thể kết nối tới máy chủ');
     } finally {
       if (mounted) setState(() => uploading = false);
     }

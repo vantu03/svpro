@@ -175,9 +175,9 @@ class LoginScreenState extends State<LoginScreen> {
         }
       }
     } catch (e) {
+      print(e);
       if (mounted) {
-        print(e);
-        Notifier.error(context, 'Lỗi kết nối');
+        Notifier.error(context, 'Không thể kết nối tới máy chủ');
       }
     } finally {
       setState(() => isLoading = false);
