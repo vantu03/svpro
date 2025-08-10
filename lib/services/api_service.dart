@@ -2,13 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:svpro/services/push_notification_service.dart';
 import 'local_storage.dart';
 import 'package:http_parser/http_parser.dart';
 
 class ApiService {
-  //static const baseUrl = 'https://api.sv.pro.vn';
-  static const baseUrl = 'http://127.0.0.1:8000';
+  static const baseUrl = 'https://api.sv.pro.vn';
+  //static const baseUrl = 'http://127.0.0.1:8000';
 
   static MediaType getMediaType(String path) {
     final ext = path.toLowerCase().split('.').last;
@@ -39,7 +38,7 @@ class ApiService {
       body:  jsonEncode({
         'username': username,
         'password': password,
-        'fcm_token': PushNotificationService.fcm_token,
+        'fcm_token': LocalStorage.fcm_token,
       }),
     );
   }
@@ -157,4 +156,5 @@ class ApiService {
       headers: authHeaders,
     );
   }
+
 }

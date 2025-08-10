@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class LocalStorage {
   // ==== Biến RAM tạm ====
   static String auth_token = '';
+  static String fcm_token = '';
 
   static Map<String, dynamic> schedule = {};
   static DateTime? lastUpdateTime;
@@ -14,6 +15,7 @@ class LocalStorage {
   static int notifyTomorrowMinute = 0;
   static int notifyWeeklyHour = 20;
   static int notifyWeeklyMinute = 0;
+  static bool notificationsAsked = false;
 
   /// ==== Load toàn bộ từ SharedPreferences vào RAM ====
   static Future<void> init() async {
@@ -33,6 +35,7 @@ class LocalStorage {
     notifyTomorrowMinute = prefs.getInt('notifyTomorrowMinute') ?? 0;
     notifyWeeklyHour = prefs.getInt('notifyWeeklyHour') ?? 20;
     notifyWeeklyMinute = prefs.getInt('notifyWeeklyMinute') ?? 0;
+    notificationsAsked = prefs.getBool('notificationsAsked') ?? false;
 
   }
 
@@ -54,6 +57,7 @@ class LocalStorage {
     await prefs.setInt('notifyTomorrowMinute', notifyTomorrowMinute);
     await prefs.setInt('notifyWeeklyHour', notifyWeeklyHour);
     await prefs.setInt('notifyWeeklyMinute', notifyWeeklyMinute);
+    await prefs.setBool('notificationsAsked', notificationsAsked);
 
   }
 

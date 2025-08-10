@@ -1,7 +1,10 @@
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:svpro/services/app_permission_service.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_scheduler.dart';
+import 'package:svpro/utils/dialog_helper.dart';
 import 'package:svpro/widgets/tabs/home_tab.dart';
 import 'package:svpro/widgets/tabs/schedule_tab.dart';
 import 'package:svpro/widgets/tabs/notification_tab.dart';
@@ -31,12 +34,12 @@ class HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (LocalStorage.auth_token.isEmpty) {
         context.go('/login');
       } else {
-        //wsService.connect("wss://api.sv.pro.vn/ws/");
-        wsService.connect("ws://127.0.0.1:8000/ws/");
+        wsService.connect();
+        //Đăng ký các hàm
         wsService.onLogout = () async {
           LocalStorage.auth_token = '';
           LocalStorage.schedule = {};
@@ -46,6 +49,32 @@ class HomeScreenState extends State<HomeScreen> {
             context.go('/login');
           }
         };
+
+        if (!LocalStorage.notificationsAsked) {
+          await DialogHelper.showConfirmationDialog(
+            context: context,
+            title: 'Bật thông báo',
+            content: 'Bật để nhận lịch học và nhắc nhở quan trọng.',
+            confirmText: 'Bật ngay',
+            confirmColor: Colors.blueAccent,
+            onConfirm: () async {
+
+              LocalStorage.notificationsAsked = true;
+              await LocalStorage.push();
+
+              final granted = await NotificationPermissionService.requestNotificationPermission();
+              if (!granted) {
+                await DialogHelper.showConfirmationDialog(context: context,
+                    title: '',
+                    content: 'Bật lại thông báo hãy mở \'Cài đặt\' nhé!',
+                    confirmText: 'OK',
+                    cancelText: null,
+                    onConfirm: () {});
+              }
+            },
+          );
+        }
+
       }
     });
   }
@@ -65,7 +94,7 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     if (LocalStorage.auth_token.isEmpty) {
-      return CircularProgressIndicator();
+      return Center(child: CircularProgressIndicator(),);
     }
     return Scaffold(
       body: IndexedStack(

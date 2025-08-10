@@ -15,7 +15,7 @@ class ScheduleTab extends StatefulWidget implements TabItem {
   const ScheduleTab({super.key});
 
   @override
-  String get label => 'Lịch học';
+  String get label => 'Lịch';
 
   @override
   IconData get icon => Icons.calendar_today;

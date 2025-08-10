@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:svpro/models/user.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/widgets/feature_item.dart';
+import 'package:svpro/widgets/features/feature_privacy_policy.dart';
 import 'package:svpro/widgets/features/feature_shipper.dart';
 import 'package:svpro/widgets/tab_item.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -12,7 +13,7 @@ class HomeTab extends StatefulWidget implements TabItem {
   const HomeTab({super.key});
 
   @override
-  String get label => 'SVPro';
+  String get label => 'Trang chủ';
 
   @override
   IconData get icon => Icons.home;
@@ -28,6 +29,7 @@ class HomeTabState extends State<HomeTab> {
   final List<FeatureItem> features = const [
     //FeatureSend(),
     FeatureShipper(),
+    FeaturePrivacyPolicy(),
   ];
 
   UserModel? user;
@@ -110,12 +112,7 @@ class HomeTabState extends State<HomeTab> {
               const SizedBox(height: 24),
               userInfoCard(),
               const SizedBox(height: 24),
-              const Text(
-                'Tiện ích sinh viên',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              featureGrid(),
+              featureList(),
               const SizedBox(height: 100),
             ],
           ),
@@ -187,6 +184,30 @@ class HomeTabState extends State<HomeTab> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget featureList() {
+    return Column(
+      children: features.map((item) {
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 6),
+          child: ListTile(
+            leading: Icon(item.icon, color: Colors.blueAccent, size: 30),
+            title: Text(
+              item.label,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => item as Widget),
+              );
+            },
+          ),
+        );
+      }).toList(),
     );
   }
 

@@ -11,7 +11,7 @@ Color getColorByDate(DateTime date) {
   final diff = target.difference(d).inDays;
 
   if (diff < 0) return Colors.grey; // Past
-  if (diff == 0) return Colors.orange; // Today
+  if (diff == 0) return Color(0xffff891b); // Today
   if (diff == 1) return Colors.purple; // Tomorrow
   return  Colors.teal; // Future
 }

@@ -44,7 +44,6 @@ class NotificationTabState extends State<NotificationTab> {
     wsService.onInsertNotification = (data) {
       try {
         final notification = NotificationModel.fromJson(data);
-
         setState(() {
           notifications.insert(0, notification);
         });

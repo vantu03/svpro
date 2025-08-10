@@ -7,7 +7,7 @@ class DialogHelper {
     required String content,
     required String confirmText,
     required VoidCallback onConfirm,
-    String cancelText = 'Hủy',
+    String? cancelText = 'Hủy',
     Color confirmColor = Colors.blue,
     bool useRootNavigator = true,
   }) {
@@ -19,10 +19,11 @@ class DialogHelper {
         title: Text(title),
         content: Text(content),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(cancelText),
-          ),
+          if (cancelText != null)
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(cancelText),
+            ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(ctx).pop();

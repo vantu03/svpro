@@ -1,11 +1,7 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:svpro/utils/notifier.dart';
 
 class NotificationService {
   static final NotificationService instance = NotificationService.internal();
@@ -16,41 +12,40 @@ class NotificationService {
 
   NotificationService.internal();
 
+
   Future<void> init() async {
-    // Init timezone (required for scheduled notifications)
+    // Timezone cho schedule
     tz.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Asia/Ho_Chi_Minh'));
 
-// Android init (phải đặt icon trong `android/app/src/main/res/drawable/`)
-    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+    // Android (đảm bảo đã có icon trong mipmap/drawable)
+    const AndroidInitializationSettings initializationSettingsAndroid =
+    AndroidInitializationSettings('@mipmap/ic_launcher');
 
-
-// iOS & macOS
-    final DarwinInitializationSettings initializationSettingsDarwin =
+    // iOS & macOS: KHÔNG tự xin quyền ở init (để xin khi cần)
+    const DarwinInitializationSettings initializationSettingsDarwin =
     DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+      // Khi app đang foreground vẫn hiện thông báo
       defaultPresentAlert: true,
       defaultPresentBadge: true,
       defaultPresentSound: true,
     );
 
-// Linux
-    final LinuxInitializationSettings initializationSettingsLinux =
+    const LinuxInitializationSettings initializationSettingsLinux =
     LinuxInitializationSettings(
       defaultActionName: 'Open notification',
     );
 
-// Windows
-    final WindowsInitializationSettings initializationSettingsWindows =
+    const WindowsInitializationSettings initializationSettingsWindows =
     WindowsInitializationSettings(
       appName: 'SVPro',
       appUserModelId: 'com.example.flutter_notifications',
       guid: 'd49b0314-ee7a-4626-bf79-97cdb8a991bb',
     );
 
-// Gộp tất cả platform vào InitializationSettings
     final InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsDarwin,
@@ -59,33 +54,23 @@ class NotificationService {
       windows: initializationSettingsWindows,
     );
 
-// Khởi tạo plugin
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
       onDidReceiveBackgroundNotificationResponse: notificationTapBackground, // optional
     );
-
-    //Xin quyền ios
-    final plugin = flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
-
-    final settings = await plugin?.requestPermissions(alert: true, badge: true, sound: true);
-    print('iOS notification permission granted: $settings');
-
-
-
   }
-    // Handle when notification is tapped
+
+  // Handle khi user tap thông báo (foreground)
   void onDidReceiveNotificationResponse(NotificationResponse response) {
-    // handle tap action here
-    print("Notification clicked: ${response.payload}, ${response.id}, ${response.actionId}");
+    debugPrint("Notification clicked: ${response.payload}, ${response.id}, ${response.actionId}");
+    // TODO: điều hướng theo payload nếu cần (GoRouter, v.v.)
   }
 
-  // Required entrypoint for background notification response
+  // Handle tap background
   @pragma('vm:entry-point')
   static void notificationTapBackground(NotificationResponse response) {
-    print('Background Notification tapped: ${response.payload}, ${response.id}, ${response.actionId}');
+    debugPrint('Background Notification tapped: ${response.payload}, ${response.id}, ${response.actionId}');
   }
 
   /// Show an immediate notification
@@ -141,27 +126,7 @@ class NotificationService {
       print('Thời gian đặt thông báo đã trôi qua: $scheduledDateTime');
       return;
     }
-    // Kiểm tra quyền exact alarm nếu Android 12+
-    if (Platform.isAndroid) {
-      final androidInfo = await DeviceInfoPlugin().androidInfo;
-      if (androidInfo.version.sdkInt >= 31) {
-        final status = await Permission.scheduleExactAlarm.status;
-        if (!status.isGranted) {
-          final result = await Permission.scheduleExactAlarm.request();
-          if (!result.isGranted) {
-
-            if (context != null) {
-              Notifier.error(context, 'Quền đặt lịch thông báo chính xác bị từ chối.');
-            } else {
-              print('Không được phép đặt lịch thông báo chính xác.');
-            }
-            return;
-          }
-        }
-      }
-    }
-    final tz.TZDateTime scheduledTZ =
-    tz.TZDateTime.from(scheduledDateTime, tz.local);
+    final tz.TZDateTime scheduledTZ = tz.TZDateTime.from(scheduledDateTime, tz.local);
 
     const androidDetails = AndroidNotificationDetails(
       'scheduled_channel',

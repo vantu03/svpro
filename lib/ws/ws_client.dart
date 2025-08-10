@@ -5,6 +5,10 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:svpro/ws/ws_controller.dart';
 
 class WebSocketClient {
+
+  static const String baseUrl = "wss://api.sv.pro.vn/ws/";
+  //static const String baseUrl = "ws://127.0.0.1:8000/ws/";
+
   WebSocketChannel? channel;
   WebSocketController? controller;
 
@@ -24,7 +28,7 @@ class WebSocketClient {
     controller = WebSocketController(client: this);
   }
 
-  void connect(String url) {
+  void connect({String url = baseUrl}) {
 
     disconnect();
 
@@ -79,7 +83,7 @@ class WebSocketClient {
 
     print('[WS] Reconnecting in 3s...');
     await Future.delayed(const Duration(seconds: 3));
-    connect(url);
+    connect(url: url);
   }
 
   void startPing() {

@@ -1,22 +1,10 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:svpro/services/api_service.dart';
-import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_service.dart';
 
 
 class PushNotificationService {
   final FirebaseMessaging messaging = FirebaseMessaging.instance;
-  static String fcm_token = '';
   Future<void> init() async {
-    // Xin quyền nhận thông báo
-    await messaging.requestPermission();
-
-    // In ra token dùng để gửi từ server
-    final token = await messaging.getToken();
-
-    if (token != null) {
-      PushNotificationService.fcm_token = token;
-    }
 
     //Nhận thông báo khi app đang chạy (foreground)
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {

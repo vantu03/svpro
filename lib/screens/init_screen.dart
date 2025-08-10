@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:svpro/firebase_options.dart';
-import 'package:svpro/services/local_storage.dart';
+import 'package:svpro/services/app_permission_service.dart';
 import 'package:svpro/services/notification_service.dart';
 import 'package:svpro/services/push_notification_service.dart';
 import 'package:go_router/go_router.dart';
@@ -28,15 +26,6 @@ class InitScreenState extends State<InitScreen> {
   Future<void> initApp() async {
     print("🔁 initApp started");
 
-    await LocalStorage.init();
-    try {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-    } catch (e) {
-      print("❌ Firebase init error: $e");
-    }
-
     try {
       await NotificationService.instance.init();
     } catch (e) {
@@ -45,11 +34,10 @@ class InitScreenState extends State<InitScreen> {
 
     try {
       await PushNotificationService().init();
+      await NotificationPermissionService.initFcmToken();
     } catch (e) {
       print("❌ Push init error: $e");
     }
-
-    await Future.delayed(const Duration(milliseconds: 100));
     print('init complate...');
     InitScreen.initialized = true;
     if (mounted) {
@@ -69,7 +57,6 @@ class InitScreenState extends State<InitScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          /*Image.asset('assets/images/background.jpg', fit: BoxFit.cover),*/
           Positioned(
             left: 24,
             right: 24,
@@ -82,8 +69,14 @@ class InitScreenState extends State<InitScreen> {
             ),
           ),
           Center(
-            child: CircularProgressIndicator(),
+            child: Image.asset(
+              'assets/icon/app_icon.png',
+              width: 120,
+              height: 120,
+              fit: BoxFit.contain,
+            ),
           ),
+
         ],
       ),
     );
