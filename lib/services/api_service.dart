@@ -6,8 +6,8 @@ import 'local_storage.dart';
 import 'package:http_parser/http_parser.dart';
 
 class ApiService {
-  //static const baseUrl = 'https://api.sv.pro.vn';
-  static const baseUrl = 'http://127.0.0.1:8000';
+  static const baseUrl = 'https://api.sv.pro.vn';
+  //static const baseUrl = 'http://127.0.0.1:8000';
 
   static MediaType getMediaType(String path) {
     final ext = path.toLowerCase().split('.').last;
@@ -45,7 +45,7 @@ class ApiService {
 
   static Future<http.Response> getUser() async {
     return await http.get(
-      Uri.parse('$baseUrl/user'),
+      Uri.parse('$baseUrl/user/'),
       headers: authHeaders,
     );
   }
@@ -59,7 +59,7 @@ class ApiService {
 
   static Future<http.Response> getSchedule() async {
     return await http.get(
-      Uri.parse('$baseUrl/user/schedule/'),
+      Uri.parse('$baseUrl/user/schedule'),
       headers: authHeaders,
     );
   }
@@ -141,20 +141,37 @@ class ApiService {
     );
   }
 
-  static Future<http.Response> getNotifications() async {
-    final uri = Uri.parse('$baseUrl/notification');
+  static Future<http.Response> getNotifications({
+    int offset = 0,
+    int limit = 10,
+    String? status,
+  }) async {
+    final uri = Uri.parse('$baseUrl/notification/').replace(
+      queryParameters: {
+        'offset': offset.toString(),
+        'limit': limit.toString(),
+        if (status != null)
+          'status': status,
+      },
+    );
+
     return await http.get(
       uri,
       headers: authHeaders,
     );
   }
 
-  static Future<http.Response> getInfo() async {
-    final uri = Uri.parse('$baseUrl/user');
-    return await http.get(
+  static Future<http.Response> markNotificationRead(int notificationId) async {
+    final uri = Uri.parse('$baseUrl/notification/read');
+    return await http.post(
       uri,
       headers: authHeaders,
+      body: jsonEncode({'id': notificationId}),
     );
+  }
+  static Future<http.Response> getUnreadCount() async {
+    final uri = Uri.parse('$baseUrl/notification/unread-count');
+    return await http.get(uri, headers: authHeaders);
   }
 
 }

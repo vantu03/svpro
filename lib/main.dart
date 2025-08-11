@@ -11,8 +11,8 @@ import 'app_navigator.dart';
 import 'firebase_options.dart';
 
 void main() async {
+  debugPrint('main() called');
   WidgetsFlutterBinding.ensureInitialized();
-
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,);
   runApp(MyApp());
 }
@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('MyApp.build');
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
 
@@ -44,7 +45,6 @@ class MyApp extends StatelessWidget {
             path: '/home',
             builder: (context, state) {
               String? initialTabId = state.uri.queryParameters['tab'];
-              print("go $initialTabId");
               return HomeScreen(initialTabId:initialTabId);
             },
           ),

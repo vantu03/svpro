@@ -4,7 +4,6 @@ import 'package:svpro/services/app_permission_service.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_service.dart';
 import 'package:svpro/services/push_notification_service.dart';
-import 'package:go_router/go_router.dart';
 
 class InitScreen extends StatefulWidget {
   const InitScreen({super.key});
@@ -43,10 +42,13 @@ class InitScreenState extends State<InitScreen> {
     print('init complate...');
     InitScreen.initialized = true;
 
+    if (NotificationService.instance.processPendingPayload()) {
+      return;
+    }
     if (AppNavigator.hasPending) {
       AppNavigator.flushPending();
     } else if (mounted) {
-      context.go('/home');
+      AppNavigator.safeGo('/home');
     }
 
   }

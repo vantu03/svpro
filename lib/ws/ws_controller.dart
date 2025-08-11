@@ -29,6 +29,9 @@ class WebSocketController {
       case 'notification':
         await client.onInsertNotification?.call(payload);
         break;
+      case 'notification_read':
+        await client.onReadNotification?.call(payload);
+        break;
     }
   }
 

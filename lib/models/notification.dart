@@ -2,7 +2,7 @@ class NotificationModel {
   final int id;
   final String title;
   final String content;
-  final bool isRead;
+  bool isRead;
   final String createdAt;
 
   NotificationModel({

@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'package:svpro/ws/ws_controller.dart';
 
 class WebSocketClient {
 
-  //static const String baseUrl = "wss://api.sv.pro.vn/ws/";
-  static const String baseUrl = "ws://127.0.0.1:8000/ws/";
+  static const String baseUrl = "wss://api.sv.pro.vn/ws/";
+  //static const String baseUrl = "ws://127.0.0.1:8000/ws/";
 
   WebSocketChannel? channel;
   WebSocketController? controller;
@@ -23,6 +24,7 @@ class WebSocketClient {
   Function(dynamic data)? onInsertNotification;
   Function()? onLoadNotification;
   Function()? onLoadHome;
+  Function(dynamic data)? onReadNotification;
 
   WebSocketClient() {
     controller = WebSocketController(client: this);
@@ -101,14 +103,17 @@ class WebSocketClient {
   }
 
   void disconnect() {
-    manuallyClosed = true;
-    isConnected = false;
-    try {
-      channel?.sink.close();
-    } catch (_) {}
-    pingTimer?.cancel();
-    pingTimer = null;
-    channel = null;
+    if (isConnected) {
+      print('disconnect........');
+      manuallyClosed = true;
+      try {
+        channel?.sink.close();
+      } catch (_) {}
+      pingTimer?.cancel();
+      pingTimer = null;
+      channel = null;
+      isConnected = false;
+    }
   }
 
   void send(String cmd, Map<String, dynamic> payload) {

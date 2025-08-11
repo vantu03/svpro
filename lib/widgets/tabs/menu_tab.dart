@@ -11,7 +11,9 @@ import 'package:svpro/widgets/tab_item.dart';
 import 'package:svpro/ws/ws_client.dart';
 
 class MenuTab extends StatefulWidget implements TabItem {
-  const MenuTab({super.key});
+  const MenuTab({super.key, this.onBadgeChanged});
+
+  final BadgeSetter? onBadgeChanged;
 
   @override
   String get id => 'menu';

@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:svpro/app_navigator.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -9,6 +11,8 @@ import 'package:timezone/timezone.dart' as tz;
 class NotificationService {
   static final NotificationService instance = NotificationService.internal();
   factory NotificationService() => instance;
+
+  static String? pendingPayload;
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
@@ -62,60 +66,36 @@ class NotificationService {
       onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
       onDidReceiveBackgroundNotificationResponse: notificationTapBackground, // optional
     );
+
+
+
+    final details = await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
+    if ((details?.didNotificationLaunchApp ?? false) &&
+        details?.notificationResponse != null) {
+      pendingPayload = details!.notificationResponse!.payload;
+    }
   }
 
-  // Handle khi user tap thông báo (foreground hoặc background thường)
+  // Tap khi app đang chạy
   void onDidReceiveNotificationResponse(NotificationResponse response) {
-    debugPrint("Notification clicked: ${response.payload}, ${response.id}, ${response.actionId}");
-    handlePayload(response.payload);
+    pendingPayload = response.payload;
+    processPendingPayload();
   }
 
-  // Handle tap khi app đã bị kill hoặc background isolate
+  // Tap khi app bị kill (Android background isolate)
   @pragma('vm:entry-point')
   static void notificationTapBackground(NotificationResponse response) {
-    debugPrint('Background Notification tapped: ${response.payload}, ${response.id}, ${response.actionId}');
-
-    // Vì hàm này static nên không gọi this.handlePayload được → dùng instance
-    NotificationService.instance.handlePayload(response.payload);
+    debugPrint('Background tap: ${response.payload}');
+    pendingPayload = response.payload;
   }
 
-  /// Show an immediate notification
-  Future<void> showNotification({
-    required int id,
-    required String title,
-    required String body,
-    String? payload,
-  }) async {
-    const androidDetails = AndroidNotificationDetails(
-      'immediate_channel',
-      'SVPro',
-      channelDescription: 'Channel for immediate notifications',
-      importance: Importance.max,
-      priority: Priority.high,
-      icon: '@mipmap/ic_launcher',
-      sound: RawResourceAndroidNotificationSound('notification_sound'),
-      playSound: true,
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-
-    const notificationDetails = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await flutterLocalNotificationsPlugin.show(
-      id,
-      title,
-      body,
-      notificationDetails,
-      payload: payload,
-    );
+  bool processPendingPayload() {
+    if (pendingPayload?.isNotEmpty == true) {
+      handlePayload(pendingPayload);
+      pendingPayload = null;
+      return true;
+    }
+    return false;
   }
 
   void handlePayload(String? payload) {
@@ -143,10 +123,63 @@ class NotificationService {
           AppNavigator.safeGo(payload);
         }
       }
-    } catch (_) {
-      AppNavigator.safeGo(payload);
+    } catch (e) {
+
+      Timer(const Duration(seconds: 5), () {
+        AppNavigator.warning(e.toString());
+      });
     }
   }
+
+  /// Show an immediate notification
+  Future<void> showNotification({
+    required int id,
+    required String title,
+    required String body,
+    String? payload,
+    bool bumpBadge = false,
+  }) async {
+
+    if (bumpBadge) {
+      _badgeCount = (_badgeCount + 1).clamp(0, 9999);
+    }
+
+    final androidDetails = AndroidNotificationDetails(
+      'immediate_channel',
+      'SVPro',
+      channelDescription: 'Channel for immediate notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+      sound: const RawResourceAndroidNotificationSound('notification_sound'),
+      playSound: true,
+      channelShowBadge: true,
+      number: badgeCount,
+    );
+
+    final iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+      badgeNumber: badgeCount,
+    );
+
+
+    final notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await flutterLocalNotificationsPlugin.show(
+      id,
+      title,
+      body,
+      notificationDetails,
+      payload: payload,
+    );
+    await applyBadge();
+  }
+
   /// Schedule a notification for a specific time (even after reboot if allowed)
   Future<void> scheduleNotification({
     required int id,
@@ -155,29 +188,37 @@ class NotificationService {
     required DateTime scheduledDateTime,
     String? payload,
     BuildContext? context,
+    bumpBadge = false,
   }) async {
 
     if (scheduledDateTime.isBefore(DateTime.now())) {
       print('Thời gian đặt thông báo đã trôi qua: $scheduledDateTime');
       return;
     }
+
+    if (bumpBadge) {
+      _badgeCount = (_badgeCount + 1).clamp(0, 9999);
+    }
     final tz.TZDateTime scheduledTZ = tz.TZDateTime.from(scheduledDateTime, tz.local);
 
-    const androidDetails = AndroidNotificationDetails(
+    final androidDetails = AndroidNotificationDetails(
       'scheduled_channel',
       'Scheduled Notifications',
       channelDescription: 'Channel for scheduled notifications',
       importance: Importance.max,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',
-      sound: RawResourceAndroidNotificationSound('notification_sound'),
+      sound: const RawResourceAndroidNotificationSound('notification_sound'),
       playSound: true,
+      channelShowBadge: true,
+      number: badgeCount,
     );
 
-    const iosDetails = DarwinNotificationDetails(
+    final iosDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+      badgeNumber: badgeCount,
     );
 
     const winDetails = WindowsNotificationDetails(
@@ -206,6 +247,32 @@ class NotificationService {
 
   Future<void> cancelNotification(int id) async {
     await flutterLocalNotificationsPlugin.cancel(id);
+  }
+
+  int _badgeCount = 0;
+  int get badgeCount => _badgeCount;
+
+  Future<void> setBadgeFromServer(int unread) async {
+    _badgeCount = unread.clamp(0, 9999);
+    await applyBadge();
+  }
+
+  Future<void> incBadge([int step = 1]) async {
+    _badgeCount = (_badgeCount + step).clamp(0, 9999);
+    await applyBadge();
+  }
+
+  Future<void> clearBadge() async {
+    _badgeCount = 0;
+    await applyBadge();
+  }
+
+  Future<void> applyBadge() async {
+    if (badgeCount <= 0) {
+      await FlutterAppBadger.removeBadge();
+    } else {
+      await FlutterAppBadger.updateBadgeCount(badgeCount);
+    }
   }
 
 }

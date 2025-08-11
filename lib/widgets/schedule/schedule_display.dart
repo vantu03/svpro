@@ -31,31 +31,38 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
   DateTime firstDay = today;
   DateTime lastDay = today.add(Duration(days: 30));
   DateTime focusedDay = today;
-  Timer? timer;
   int lastScroll = 0;
 
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
 
+  bool _scrollScheduled = false;
+  int _lastOnScrollMs = 0;
+  static const int kOnScrollThrottleMs = 500;
+
   @override
   void initState() {
     super.initState();
     initSchedule();
-    timer = Timer.periodic(const Duration(milliseconds: 500), (_) {
-      onScroll();
 
-      if (!ScheduleDisplay.isInitialized) {
-        initSchedule();
-        setState(() {
+
+    itemPositionsListener.itemPositions.addListener(() {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      if (_scrollScheduled) return;
+
+      if (now - _lastOnScrollMs >= kOnScrollThrottleMs) {
+        _lastOnScrollMs = now;
+        onScroll(); // chạy ngay
+      } else {
+        _scrollScheduled = true;
+        final delay = Duration(milliseconds: kOnScrollThrottleMs - (now - _lastOnScrollMs));
+        Future.delayed(delay, () {
+          _scrollScheduled = false;
+          _lastOnScrollMs = DateTime.now().millisecondsSinceEpoch;
+          onScroll(); // chạy trễ 1 lần
         });
       }
     });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    timer?.cancel();
   }
 
   void onScroll() {
@@ -126,6 +133,10 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
 
   @override
   Widget build(BuildContext context) {
+
+    if (!ScheduleDisplay.isInitialized) {
+      initSchedule();
+    }
     return Stack(
       children: [
         Column(

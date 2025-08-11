@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:go_router/go_router.dart';
@@ -7,7 +9,7 @@ class AppNavigator {
   static final GlobalKey<NavigatorState> key = GlobalKey<NavigatorState>();
   static BuildContext? get ctx => key.currentContext;
   static bool get hasContext => key.currentState?.mounted == true && ctx != null;
-  static bool get hasPending => _pendingPath != null;
+  static bool get hasPending => pendingPath != null;
 
   //
   static void _post(void Function() fn) {
@@ -22,29 +24,33 @@ class AppNavigator {
   }
 
   // ===== Điều hướng an toàn =====
-  static String? _pendingPath;
+  static String? pendingPath;
 
   static void safeGo(String path) {
-    if (!hasContext) { _pendingPath = path; return; }
+    if (!hasContext) {
+      pendingPath = path;
+      return;
+    }
     _post(() => ctx?.go(path));
   }
 
   static void safePush(String path) {
-    if (!hasContext) { _pendingPath = path; return; }
+    if (!hasContext) { pendingPath = path; return; }
     _post(() => ctx?.push(path));
   }
 
   static void safeReplace(String path) {
-    if (!hasContext) { _pendingPath = path; return; }
+    if (!hasContext) { pendingPath = path; return; }
     _post(() => ctx?.go(path));
   }
 
   //điều hướng còn tồn đọng
   static void flushPending() {
-    if (!hasContext || _pendingPath == null) return;
-    final path = _pendingPath!;
-    _pendingPath = null;
+    if (!hasContext || pendingPath == null) return;
+    final path = pendingPath!;
+    pendingPath = null;
     _post(() => ctx?.go(path));
+    AppNavigator.warning(path);
   }
 
   // ===== Pop =====

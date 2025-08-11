@@ -1,8 +1,5 @@
 
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:svpro/app_navigator.dart';
 import 'package:svpro/services/app_permission_service.dart';
 import 'package:svpro/services/local_storage.dart';
@@ -26,12 +23,15 @@ class HomeScreen extends StatefulWidget {
 
 class HomeScreenState extends State<HomeScreen> {
 
-  final List<TabItem> tabs = [
-    const HomeTab(),
-    const ScheduleTab(),
-    const NotificationTab(),
-    const MenuTab(),
-  ];
+  late final List<TabItem> tabs;
+
+  final Map<String, int> badges = {};
+
+  void setBadge(String tabId, int count) {
+    setState(() => badges[tabId] = count < 0 ? 0 : count);
+  }
+
+  int badgeOf(TabItem t) => badges[t.id] ?? 0;
 
   int currentIndex = 0;
 
@@ -46,6 +46,13 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+
+    tabs = [
+      const HomeTab(),
+      const ScheduleTab(),
+      NotificationTab(onBadgeChanged: setBadge),
+      const MenuTab(),
+    ];
 
     currentIndex = indexFromParam(widget.initialTabId);
 
@@ -93,7 +100,6 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    wsService.disconnect();
     super.dispose();
   }
 
@@ -128,20 +134,39 @@ class HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.white,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
-        onTap: (index) {
-          switchToTab(index);
-        },
+        onTap: switchToTab,
         selectedItemColor: Colors.blueAccent,
         unselectedItemColor: Colors.grey,
-        selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
         type: BottomNavigationBarType.fixed,
         items: tabs.map((tab) {
+          final badge = badgeOf(tab);
           return BottomNavigationBarItem(
-            icon: Icon(tab.icon),
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(tab.icon),
+                if (badge > 0)
+                  Positioned(
+                    right: -15, top: -10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      decoration: const BoxDecoration(
+                          color: Colors.red, borderRadius: BorderRadius.all(Radius.circular(10))),
+                      constraints: const BoxConstraints(minWidth: 16),
+                      child: Text(
+                        badge > 99 ? '99+' : '$badge',
+                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             label: tab.label,
           );
         }).toList(),
       ),
+
 
     );
   }
