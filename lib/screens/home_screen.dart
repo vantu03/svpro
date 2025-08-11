@@ -53,6 +53,7 @@ class HomeScreenState extends State<HomeScreen> {
       if (LocalStorage.auth_token.isEmpty) {
         AppNavigator.safeGo('/login');
       } else {
+
         wsService.connect();
         //Đăng ký các hàm
         wsService.onLogout = () async {

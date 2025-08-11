@@ -123,7 +123,6 @@ class NotificationService {
 
     try {
       final data = jsonDecode(payload);
-
       final action = data['action'] ?? 'navigate';
       switch (action) {
         case 'navigate': {

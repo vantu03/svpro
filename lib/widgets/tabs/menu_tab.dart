@@ -6,7 +6,9 @@ import 'package:svpro/app_navigator.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_scheduler.dart';
+import 'package:svpro/services/notification_service.dart';
 import 'package:svpro/widgets/tab_item.dart';
+import 'package:svpro/ws/ws_client.dart';
 
 class MenuTab extends StatefulWidget implements TabItem {
   const MenuTab({super.key});
@@ -92,7 +94,7 @@ class MenuTabState extends State<MenuTab> {
             },
           ),
 
-          /*
+
           const Divider(),
 
           ListTile(
@@ -102,9 +104,9 @@ class MenuTabState extends State<MenuTab> {
             onTap: () {
               if (wsService.isConnected) {
                 wsService.send("add_test_notification", {});
-                Notifier.success(context, "Đã gửi yêu cầu test qua socket.");
+                AppNavigator.success("Đã gửi yêu cầu test qua socket.");
               } else {
-                Notifier.error(context, "Socket chưa kết nối.");
+                AppNavigator.error("Socket chưa kết nối.");
               }
             },
           ),
@@ -113,6 +115,15 @@ class MenuTabState extends State<MenuTab> {
             title: const Text('Kiểm tra thông báo',
                 style: TextStyle(color: Colors.green)),
             onTap: () async {
+
+              final payload = {
+                "action": "navigate",
+                "route": "/home",
+                "params": {
+                  "tab": "notifications"
+                },
+              };
+
               final now = DateTime.now();
 
               // Gửi thông báo ngay
@@ -120,6 +131,7 @@ class MenuTabState extends State<MenuTab> {
                 id: 999,
                 title: 'Test ngay',
                 body: 'Thông báo hiển thị ngay lập tức!',
+                payload: jsonEncode(payload),
               );
 
               // Gửi thông báo sau 5 giây
@@ -128,10 +140,10 @@ class MenuTabState extends State<MenuTab> {
                 title: 'Test sau 5s',
                 body: 'Thông báo được gửi sau 5 giây!',
                 scheduledDateTime: now.add(const Duration(seconds: 5)),
+                  payload: jsonEncode(payload),
               );
             },
           ),
-          */
         ],
       ),
     );

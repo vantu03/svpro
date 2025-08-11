@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:go_router/go_router.dart';
 
 class AppNavigator {
@@ -8,9 +9,16 @@ class AppNavigator {
   static bool get hasContext => key.currentState?.mounted == true && ctx != null;
   static bool get hasPending => _pendingPath != null;
 
-  // Chạy sau frame để tránh gọi trong phase build
+  //
   static void _post(void Function() fn) {
-    WidgetsBinding.instance.addPostFrameCallback((_) => fn());
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.idle) {
+      // Không trong build/layout/paint → chạy ngay
+      fn();
+    } else {
+      // Đang build/layout/paint → hoãn sang frame sau
+      WidgetsBinding.instance.addPostFrameCallback((_) => fn());
+    }
   }
 
   // ===== Điều hướng an toàn =====
@@ -28,10 +36,10 @@ class AppNavigator {
 
   static void safeReplace(String path) {
     if (!hasContext) { _pendingPath = path; return; }
-    _post(() => ctx?.go(path)); // với go_router, go() = replace
+    _post(() => ctx?.go(path));
   }
 
-  // Gọi ở InitScreen (sau mount) để chạy điều hướng còn tồn đọng
+  //điều hướng còn tồn đọng
   static void flushPending() {
     if (!hasContext || _pendingPath == null) return;
     final path = _pendingPath!;

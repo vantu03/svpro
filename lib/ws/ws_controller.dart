@@ -18,6 +18,7 @@ class WebSocketController {
       case 'auth_done':
         await client.onLoadHome?.call();
         await client.onLoadNotification?.call();
+        print('auth done!');
         break;
       case 'logout':
         await client.onLogout?.call();

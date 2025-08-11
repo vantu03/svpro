@@ -42,7 +42,11 @@ class MyApp extends StatelessWidget {
           ),
           GoRoute(
             path: '/home',
-            builder: (context, state) => HomeScreen(initialTabId:state.uri.queryParameters['tab']),
+            builder: (context, state) {
+              String? initialTabId = state.uri.queryParameters['tab'];
+              print("go $initialTabId");
+              return HomeScreen(initialTabId:initialTabId);
+            },
           ),
           GoRoute(
             path: '/settings',
