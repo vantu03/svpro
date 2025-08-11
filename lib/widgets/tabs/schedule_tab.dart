@@ -2,17 +2,20 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:svpro/app_navigator.dart';
 import 'package:svpro/models/schedule.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_scheduler.dart';
 import 'package:svpro/services/notification_service.dart';
-import 'package:svpro/utils/notifier.dart';
 import 'package:svpro/widgets/schedule/schedule_display.dart';
 import 'package:svpro/widgets/tab_item.dart';
 
 class ScheduleTab extends StatefulWidget implements TabItem {
   const ScheduleTab({super.key});
+
+  @override
+  String get id => 'schedule';
 
   @override
   String get label => 'Lịch';
@@ -85,8 +88,6 @@ class ScheduleTabState extends State<ScheduleTab> {
                 setState(() {
                   isLoading = true;
                 });
-
-                Notifier.info(context, 'Đang tải lịch học...');
                 await fetchSchedule();
                 setState(() {
                   isLoading = false;
@@ -119,8 +120,6 @@ class ScheduleTabState extends State<ScheduleTab> {
                           setState(() {
                             isLoading = true;
                           });
-
-                          Notifier.info(context, 'Đang tải lịch học...');
                           await fetchSchedule();
                           setState(() {
                             isLoading = false;
@@ -164,13 +163,9 @@ class ScheduleTabState extends State<ScheduleTab> {
         LocalStorage.schedule = jsonData['detail']['data'];
         await NotificationScheduler.setupAllLearningNotifications();
         await LocalStorage.push();
-        if (mounted) {
-          Notifier.success(context, 'Lịch đã được đồng bộ với hệ thống!');
-        }
+        AppNavigator.success('Lịch đã được đồng bộ với hệ thống!');
       } else {
-        if (mounted) {
-          Notifier.error(context, jsonData['detail']['message']);
-        }
+        AppNavigator.error(jsonData['detail']['message']);
       }
     } catch (e){
       print(e);

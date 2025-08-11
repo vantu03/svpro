@@ -7,6 +7,7 @@ import 'package:svpro/screens/login_screen.dart';
 import 'package:svpro/screens/settings_screen.dart';
 import 'package:svpro/screens/init_screen.dart';
 
+import 'app_navigator.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -32,6 +33,7 @@ class MyApp extends StatelessWidget {
       ],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       routerConfig: GoRouter(
+        navigatorKey: AppNavigator.key,
         initialLocation: '/',
         routes: [
           GoRoute(
@@ -40,7 +42,7 @@ class MyApp extends StatelessWidget {
           ),
           GoRoute(
             path: '/home',
-            builder: (context, state) => HomeScreen(),
+            builder: (context, state) => HomeScreen(initialTabId:state.uri.queryParameters['tab']),
           ),
           GoRoute(
             path: '/settings',

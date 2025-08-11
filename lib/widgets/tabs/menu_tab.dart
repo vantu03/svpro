@@ -2,15 +2,17 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:svpro/app_navigator.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_scheduler.dart';
-import 'package:svpro/utils/dialog_helper.dart';
-import 'package:svpro/utils/notifier.dart';
 import 'package:svpro/widgets/tab_item.dart';
 
 class MenuTab extends StatefulWidget implements TabItem {
   const MenuTab({super.key});
+
+  @override
+  String get id => 'menu';
 
   @override
   String get label => 'Menu';
@@ -58,44 +60,32 @@ class MenuTabState extends State<MenuTab> {
             title: const Text('Đăng xuất',
                 style: TextStyle(color: Colors.red)),
             onTap: () {
-              DialogHelper.showConfirmationDialog(
-                context: context,
+              AppNavigator.showConfirmationDialog(
                 title: 'Xác nhận',
                 content: 'Bạn có chắc muốn đăng xuất?',
                 confirmText: 'Đăng xuất',
                 confirmColor: Colors.red,
                 onConfirm: () async {
-                  DialogHelper.showLoadingDialog(context);
-
                   try {
+                    AppNavigator.showLoadingDialog();
                     final response = await ApiService.logout();
                     final jsonData = jsonDecode(response.body);
 
                     if (jsonData['detail']['status']) {
-                      if (context.mounted) {
-                        Notifier.warning(context, jsonData['detail']['message']);
-                      }
+                      AppNavigator.warning(jsonData['detail']['message']);
                     } else {
-                      if (context.mounted) {
-                        Notifier.error(context, jsonData['detail']['message']);
-                      }
+                      AppNavigator.error(jsonData['detail']['message']);
                     }
                   } catch (e) {
                     print(e);
-                    if (context.mounted) {
-                      Notifier.error(context, 'Không thể kết nối tới máy chủ');
-                    }
+                    AppNavigator.error('Không thể kết nối tới máy chủ');
                   } finally {
 
                     LocalStorage.auth_token = '';
                     LocalStorage.schedule = {};
                     await LocalStorage.push();
                     await NotificationScheduler.setupAllLearningNotifications();
-
-                    if (context.mounted) {
-                      context.go('/login');
-                      DialogHelper.hideDialog(context);
-                    }
+                    AppNavigator.safeGo('/login');
                   }
                 },
               );

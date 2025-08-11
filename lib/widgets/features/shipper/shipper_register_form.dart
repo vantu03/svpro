@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:svpro/app_navigator.dart';
 import 'package:svpro/services/api_service.dart';
-import 'package:svpro/utils/notifier.dart';
 import 'package:svpro/widgets/app_dropdown_field.dart';
 import 'package:svpro/widgets/app_text_field.dart';
 import 'package:svpro/widgets/date_picker_tile.dart';
@@ -37,7 +37,7 @@ class _ShipperRegisterFormState extends State<ShipperRegisterForm> {
     if (!formKey.currentState!.validate()) return;
 
     if ([profileImageUrl, idFrontUrl, idBackUrl, birthDate, gender, vehicleType].contains(null)) {
-      Notifier.warning(context, 'Vui lòng nhập đầy đủ thông tin và ảnh!');
+      AppNavigator.warning('Vui lòng nhập đầy đủ thông tin và ảnh!');
       return;
     }
 
@@ -58,12 +58,13 @@ class _ShipperRegisterFormState extends State<ShipperRegisterForm> {
 
       var jsonData = jsonDecode(response.body);
       if (jsonData['detail']['status']) {
-        Notifier.success(context, jsonData['detail']['message']);
+        AppNavigator.success(jsonData['detail']['message']);
       } else {
-        Notifier.error(context, jsonData['detail']['message']);
-      }Navigator.pop(context, true);
+        AppNavigator.error(jsonData['detail']['message']);
+      }
+      AppNavigator.pop(true);
     } catch (e) {
-      Notifier.error(context, 'Không thể kết nối tới máy chủ');
+      AppNavigator.error('Không thể kết nối tới máy chủ');
     }
   }
 

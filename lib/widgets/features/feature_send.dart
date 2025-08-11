@@ -11,6 +11,9 @@ class FeatureSend extends StatefulWidget implements FeatureItem {
   IconData get icon => Icons.send;
 
   @override
+  String get go => '';
+
+  @override
   State<FeatureSend> createState() => FeatureSendState();
 }
 

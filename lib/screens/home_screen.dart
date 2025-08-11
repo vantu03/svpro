@@ -1,10 +1,12 @@
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:svpro/app_navigator.dart';
 import 'package:svpro/services/app_permission_service.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_scheduler.dart';
-import 'package:svpro/utils/dialog_helper.dart';
 import 'package:svpro/widgets/tabs/home_tab.dart';
 import 'package:svpro/widgets/tabs/schedule_tab.dart';
 import 'package:svpro/widgets/tabs/notification_tab.dart';
@@ -13,10 +15,13 @@ import 'package:svpro/widgets/tab_item.dart';
 import 'package:svpro/ws/ws_client.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+
+  const HomeScreen({super.key, this.initialTabId});
+  final String? initialTabId;
 
   @override
   State<HomeScreen> createState() => HomeScreenState();
+
 }
 
 class HomeScreenState extends State<HomeScreen> {
@@ -30,13 +35,23 @@ class HomeScreenState extends State<HomeScreen> {
 
   int currentIndex = 0;
 
+  int indexFromParam(String? idOrIndex) {
+    if (idOrIndex == null || idOrIndex.isEmpty) return 0;
+    final n = int.tryParse(idOrIndex);
+    if (n != null && n >= 0 && n < tabs.length) return n;
+    final i = tabs.indexWhere((t) => t.id == idOrIndex);
+    return i >= 0 ? i : 0;
+  }
+
   @override
   void initState() {
     super.initState();
 
+    currentIndex = indexFromParam(widget.initialTabId);
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (LocalStorage.auth_token.isEmpty) {
-        context.go('/login');
+        AppNavigator.safeGo('/login');
       } else {
         wsService.connect();
         //Đăng ký các hàm
@@ -45,14 +60,11 @@ class HomeScreenState extends State<HomeScreen> {
           LocalStorage.schedule = {};
           await LocalStorage.push();
           await NotificationScheduler.setupAllLearningNotifications();
-          if (mounted) {
-            context.go('/login');
-          }
+          AppNavigator.safeGo('/login');
         };
 
         if (!LocalStorage.notificationsAsked) {
-          await DialogHelper.showConfirmationDialog(
-            context: context,
+          await AppNavigator.showConfirmationDialog(
             title: 'Bật thông báo',
             content: 'Bật để nhận lịch học và nhắc nhở quan trọng.',
             confirmText: 'Bật ngay',
@@ -64,7 +76,7 @@ class HomeScreenState extends State<HomeScreen> {
 
               final granted = await NotificationPermissionService.requestNotificationPermission();
               if (!granted) {
-                await DialogHelper.showConfirmationDialog(context: context,
+                await AppNavigator.showConfirmationDialog(
                     title: '',
                     content: 'Bật lại thông báo hãy mở \'Cài đặt\' nhé!',
                     confirmText: 'OK',
@@ -74,7 +86,6 @@ class HomeScreenState extends State<HomeScreen> {
             },
           );
         }
-
       }
     });
   }
@@ -86,11 +97,23 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   void switchToTab(int index) {
+
+    if (currentIndex == index) return;
     setState(() {
       currentIndex = index;
     });
+    tabs[index].onTab();
+    AppNavigator.safeGo('/home?tab=${tabs[index].id}');
   }
 
+  @override
+  void didUpdateWidget(covariant HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialTabId != widget.initialTabId) {
+      final newIndex = indexFromParam(widget.initialTabId);
+      switchToTab(newIndex);
+    }
+  }
   @override
   Widget build(BuildContext context) {
     if (LocalStorage.auth_token.isEmpty) {
@@ -105,8 +128,7 @@ class HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         onTap: (index) {
-          setState(() => currentIndex = index);
-          tabs[index].onTab();
+          switchToTab(index);
         },
         selectedItemColor: Colors.blueAccent,
         unselectedItemColor: Colors.grey,

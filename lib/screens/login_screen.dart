@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:svpro/app_navigator.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/services/local_storage.dart';
-import 'package:svpro/utils/notifier.dart';
 
 class LoginScreen extends StatefulWidget {
 
@@ -152,7 +152,7 @@ class LoginScreenState extends State<LoginScreen> {
     final password = passwordController.text.trim();
 
     if (username.isEmpty || password.isEmpty) {
-      Notifier.warning(context, 'Vui lòng nhập đầy đủ thông tin!');
+      AppNavigator.warning('Vui lòng nhập đầy đủ thông tin!');
       return;
     }
 
@@ -164,20 +164,14 @@ class LoginScreenState extends State<LoginScreen> {
       if (jsonData['detail']['status']) {
         LocalStorage.auth_token = jsonData['detail']['data']['token'];
         await LocalStorage.push();
-        if (mounted) {
-          context.go('/home');
-          Notifier.success(context, 'Đăng nhập thành công!');
-        }
+        AppNavigator.safeGo('/home');
+        AppNavigator.success('Đăng nhập thành công!');
       } else {
-        if (mounted) {
-          Notifier.error(context, jsonData['detail']['message']);
-        }
+        AppNavigator.error(jsonData['detail']['message']);
       }
     } catch (e) {
       print(e);
-      if (mounted) {
-        Notifier.error(context, 'Không thể kết nối tới máy chủ');
-      }
+      AppNavigator.error('Không thể kết nối tới máy chủ');
     } finally {
       setState(() => isLoading = false);
     }

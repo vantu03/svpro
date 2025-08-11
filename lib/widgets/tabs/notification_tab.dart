@@ -1,15 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:svpro/app_navigator.dart';
 import 'package:svpro/models/notification.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/widgets/tab_item.dart';
-import 'package:svpro/utils/notifier.dart';
 import 'package:svpro/ws/ws_client.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class NotificationTab extends StatefulWidget implements TabItem {
   const NotificationTab({super.key});
+
+  @override
+  String get id => 'notifications';
 
   @override
   String get label => 'Thông báo';
@@ -74,7 +77,7 @@ class NotificationTabState extends State<NotificationTab> {
           isLoading = false;
         });
       } else {
-        Notifier.error(context, jsonData['detail']['message']);
+        AppNavigator.error(jsonData['detail']['message']);
       }
     } catch (e) {
       print(e);

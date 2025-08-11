@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:svpro/app_navigator.dart';
 import 'package:svpro/models/user.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/widgets/feature_item.dart';
+import 'package:svpro/widgets/features/feature_schedule.dart';
 import 'package:svpro/widgets/features/feature_privacy_policy.dart';
 import 'package:svpro/widgets/features/feature_shipper.dart';
 import 'package:svpro/widgets/tab_item.dart';
@@ -11,6 +14,9 @@ import 'package:svpro/ws/ws_client.dart';
 
 class HomeTab extends StatefulWidget implements TabItem {
   const HomeTab({super.key});
+
+  @override
+  String get id => 'home';
 
   @override
   String get label => 'Trang chủ';
@@ -27,6 +33,7 @@ class HomeTab extends StatefulWidget implements TabItem {
 
 class HomeTabState extends State<HomeTab> {
   final List<FeatureItem> features = const [
+    FeatureSchedule(),
     //FeatureSend(),
     FeatureShipper(),
     FeaturePrivacyPolicy(),
@@ -177,7 +184,7 @@ class HomeTabState extends State<HomeTab> {
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               Text(
-                user?.username.toUpperCase() ?? '',
+                user?.username ?? '',
                 style: const TextStyle(color: Colors.grey),
               ),
             ],
@@ -200,10 +207,14 @@ class HomeTabState extends State<HomeTab> {
             ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => item as Widget),
-              );
+              if (item.go.isNotEmpty) {
+                AppNavigator.safeGo(item.go);
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => item as Widget),
+                );
+              }
             },
           ),
         );
@@ -212,47 +223,4 @@ class HomeTabState extends State<HomeTab> {
   }
 
 
-  Widget featureGrid() {
-    return Wrap(
-      spacing: 16,
-      runSpacing: 16,
-      children: features.map((item) {
-        return InkWell(
-          onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => item as Widget));
-          },
-          child: Container(
-            width: 100,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.15),
-                  blurRadius: 6,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-              border: Border.all(color: Colors.blueAccent.withOpacity(0.3)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(item.icon, size: 36, color: Colors.blueAccent),
-                const SizedBox(height: 8),
-                Text(
-                  item.label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
 }

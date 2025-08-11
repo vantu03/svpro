@@ -40,8 +40,15 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
   @override
   void initState() {
     super.initState();
+    initSchedule();
     timer = Timer.periodic(const Duration(milliseconds: 500), (_) {
       onScroll();
+
+      if (!ScheduleDisplay.isInitialized) {
+        initSchedule();
+        setState(() {
+        });
+      }
     });
   }
 
@@ -90,6 +97,7 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
       lastDay.difference(today).inDays + 1,
           (i) => today.add(Duration(days: i)),
     );
+    ScheduleDisplay.isInitialized = true;
   }
 
   void jumpToDate(DateTime date) {
@@ -118,10 +126,6 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    if (!ScheduleDisplay.isInitialized) {
-      initSchedule();
-      ScheduleDisplay.isInitialized = true;
-    }
     return Stack(
       children: [
         Column(

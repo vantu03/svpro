@@ -12,6 +12,9 @@ class FeaturePrivacyPolicy extends StatefulWidget implements FeatureItem {
   IconData get icon => Icons.privacy_tip_outlined;
 
   @override
+  String get go => '';
+
+  @override
   State<FeaturePrivacyPolicy> createState() => FeaturePrivacyPolicyState();
 }
 

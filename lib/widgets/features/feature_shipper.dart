@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:svpro/app_navigator.dart';
 import 'package:svpro/services/api_service.dart';
-import 'package:svpro/utils/notifier.dart';
 import 'package:svpro/widgets/feature_item.dart';
 import 'package:svpro/widgets/features/shipper/approved_application_widget.dart';
 import 'package:svpro/widgets/features/shipper/pending_application_widget.dart';
@@ -16,6 +16,9 @@ class FeatureShipper extends StatefulWidget implements FeatureItem {
 
   @override
   IconData get icon => Icons.delivery_dining;
+
+  @override
+  String get go => '';
 
   @override
   State<FeatureShipper> createState() => FeatureShipperState();
@@ -102,9 +105,7 @@ class FeatureShipperState extends State<FeatureShipper> {
                   return const ShipperRegisterForm();
                 }
               } else {
-                if (context.mounted) {
-                  Notifier.error(context, jsonData['detail']['message']);
-                }
+                AppNavigator.error(jsonData['detail']['message']);
               }
             } catch (e) {
               print(e);

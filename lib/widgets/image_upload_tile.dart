@@ -1,9 +1,8 @@
 import 'dart:convert';
-import 'dart:io' as io;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:svpro/app_navigator.dart';
 import 'package:svpro/services/api_service.dart';
-import 'package:svpro/utils/notifier.dart';
 
 class ImageUploadTile extends StatefulWidget {
   final String? label;
@@ -52,12 +51,11 @@ class ImageUploadTileState extends State<ImageUploadTile> {
 
         widget.onChanged(url);
       } else {
-        Notifier.error(
-            context, 'Upload thất bại: ${jsonData['detail']['message']}');
+        AppNavigator.error('Upload thất bại: ${jsonData['detail']['message']}');
       }
     } catch (e) {
       print(e);
-      Notifier.error(context, 'Không thể kết nối tới máy chủ');
+      AppNavigator.error('Không thể kết nối tới máy chủ');
     } finally {
       if (mounted) setState(() => uploading = false);
     }

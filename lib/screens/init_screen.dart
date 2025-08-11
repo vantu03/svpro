@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:svpro/app_navigator.dart';
 import 'package:svpro/services/app_permission_service.dart';
+import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_service.dart';
 import 'package:svpro/services/push_notification_service.dart';
 import 'package:go_router/go_router.dart';
@@ -25,7 +27,7 @@ class InitScreenState extends State<InitScreen> {
 
   Future<void> initApp() async {
     print("🔁 initApp started");
-
+    await LocalStorage.init();
     try {
       await NotificationService.instance.init();
     } catch (e) {
@@ -40,9 +42,13 @@ class InitScreenState extends State<InitScreen> {
     }
     print('init complate...');
     InitScreen.initialized = true;
-    if (mounted) {
+
+    if (AppNavigator.hasPending) {
+      AppNavigator.flushPending();
+    } else if (mounted) {
       context.go('/home');
     }
+
   }
 
   @override

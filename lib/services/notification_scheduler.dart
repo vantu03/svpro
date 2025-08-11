@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_service.dart';
 import 'package:svpro/models/schedule.dart';
@@ -14,7 +16,7 @@ class NotificationScheduler {
     await NotificationService().cancelAllNotifications();
 
     final now = DateTime.now();
-    for (int i = 0; i <= 4; i++) {
+    for (int i = 0; i <= 14; i++) {
 
       final nextDay = now.add(Duration(days: i));
       // === Thông báo mỗi ngày cho ngày hôm sau ===
@@ -31,11 +33,21 @@ class NotificationScheduler {
           LocalStorage.notifyTomorrowMinute,
         );
 
+
+        final payload = {
+          "action": "navigate",
+          "route": "/home",
+          "params": {
+            "tab": "schedule"
+          },
+        };
+
         await NotificationService().scheduleNotification(
           id: 200 + i,
           title: eventsOnTarget.isEmpty ? 'Mai bạn rảnh?' : 'Mai bạn có ${eventsOnTarget.length} lịch cần thực hiện.',
           body: 'Lịch ngày ${DateFormat('dd/MM').format(targetDate)}',
           scheduledDateTime: scheduledTime,
+          payload: jsonEncode(payload),
         );
       }
 
@@ -61,11 +73,20 @@ class NotificationScheduler {
           LocalStorage.notifyWeeklyMinute,
         );
 
+        final payload = {
+          "action": "navigate",
+          "route": "/home",
+          "params": {
+            "tab": "schedule"
+          },
+        };
+
         await NotificationService().scheduleNotification(
           id: 999 + i,
           title: nextWeekEvents.isEmpty ? 'Tuần sau bạn rảnh' : 'Tuần sau bạn có $uniqueDays ngày cần thực hiện.',
           body: 'Tuần tới sẽ bắt đầu từ $startStr kết thúc $endStr.${nextWeekEvents.isEmpty ? 'Bạn đã chuẩn bị đi chơi chưa?' : 'Bạn đã chuẩn bị tới đâu rồi...'}',
           scheduledDateTime: scheduledTime,
+          payload: jsonEncode(payload),
         );
       }
     }

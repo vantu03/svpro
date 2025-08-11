@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:svpro/app_navigator.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -61,16 +64,19 @@ class NotificationService {
     );
   }
 
-  // Handle khi user tap thông báo (foreground)
+  // Handle khi user tap thông báo (foreground hoặc background thường)
   void onDidReceiveNotificationResponse(NotificationResponse response) {
     debugPrint("Notification clicked: ${response.payload}, ${response.id}, ${response.actionId}");
-    // TODO: điều hướng theo payload nếu cần (GoRouter, v.v.)
+    handlePayload(response.payload);
   }
 
-  // Handle tap background
+  // Handle tap khi app đã bị kill hoặc background isolate
   @pragma('vm:entry-point')
   static void notificationTapBackground(NotificationResponse response) {
     debugPrint('Background Notification tapped: ${response.payload}, ${response.id}, ${response.actionId}');
+
+    // Vì hàm này static nên không gọi this.handlePayload được → dùng instance
+    NotificationService.instance.handlePayload(response.payload);
   }
 
   /// Show an immediate notification
@@ -112,6 +118,36 @@ class NotificationService {
     );
   }
 
+  void handlePayload(String? payload) {
+    if (payload == null || payload.isEmpty) return;
+
+    try {
+      final data = jsonDecode(payload);
+
+      final action = data['action'] ?? 'navigate';
+      switch (action) {
+        case 'navigate': {
+          final route = (data['route'] as String?) ?? '/';
+          final params = (data['params'] as Map?)?.cast<String, dynamic>() ?? const {};
+          final uri = Uri(path: route, queryParameters: params.map((k, v) => MapEntry(k, '$v')));
+          AppNavigator.safeGo(uri.toString());
+          break;
+        }
+        case 'open_url': {
+          final url = data['url'] as String?;
+          if (url != null && url.isNotEmpty) {
+
+          }
+          break;
+        }
+        default: {
+          AppNavigator.safeGo(payload);
+        }
+      }
+    } catch (_) {
+      AppNavigator.safeGo(payload);
+    }
+  }
   /// Schedule a notification for a specific time (even after reboot if allowed)
   Future<void> scheduleNotification({
     required int id,
