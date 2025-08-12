@@ -6,6 +6,7 @@ import 'package:svpro/services/api_service.dart';
 import 'package:svpro/widgets/feature_item.dart';
 import 'package:svpro/widgets/features/feature_schedule.dart';
 import 'package:svpro/widgets/features/feature_privacy_policy.dart';
+import 'package:svpro/widgets/features/feature_sender.dart';
 import 'package:svpro/widgets/features/feature_shipper.dart';
 import 'package:svpro/widgets/tab_item.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -34,7 +35,7 @@ class HomeTab extends StatefulWidget implements TabItem {
 class HomeTabState extends State<HomeTab> {
   final List<FeatureItem> features = const [
     FeatureSchedule(),
-    //FeatureSend(),
+    FeatureSender(),
     FeatureShipper(),
     FeaturePrivacyPolicy(),
   ];

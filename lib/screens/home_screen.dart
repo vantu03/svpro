@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:svpro/app_navigator.dart';
+import 'package:svpro/config.dart';
 import 'package:svpro/services/app_permission_service.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_scheduler.dart';
@@ -61,7 +62,7 @@ class HomeScreenState extends State<HomeScreen> {
         AppNavigator.safeGo('/login');
       } else {
 
-        wsService.connect();
+        wsService.connect(Config.ws_url);
         //Đăng ký các hàm
         wsService.onLogout = () async {
           LocalStorage.auth_token = '';

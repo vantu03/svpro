@@ -43,12 +43,9 @@ class ScheduleTabState extends State<ScheduleTab> {
   void initState() {
     super.initState();
 
-    timer = Timer.periodic(const Duration(seconds: 1), (_) async {
+    timer = Timer.periodic(const Duration(seconds: 20), (_) async {
 
-      if (mounted &&
-          !isLoading &&
-          LocalStorage.schedule.isNotEmpty &&
-          LocalStorage.lastUpdateTime != null &&
+      if (!isLoading && LocalStorage.schedule.isNotEmpty && LocalStorage.lastUpdateTime != null &&
           DateTime.now().difference(LocalStorage.lastUpdateTime!) > const Duration(minutes: 5)
       ) {
         setState(() {
@@ -60,6 +57,12 @@ class ScheduleTabState extends State<ScheduleTab> {
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    timer?.cancel();
   }
 
   @override

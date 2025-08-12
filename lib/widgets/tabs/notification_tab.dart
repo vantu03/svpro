@@ -46,7 +46,7 @@ class NotificationTabState extends State<NotificationTab> {
   int offset = 0;
   final int limit = 10;
 
-  static const double kItemExtent = 88.0;
+  static const double kItemExtent = 110.0;
 
   @override
   void initState() {
@@ -55,8 +55,7 @@ class NotificationTabState extends State<NotificationTab> {
     timeago.setLocaleMessages('vi', timeago.ViMessages());
 
     wsService.onLoadNotification = () async {
-      await loadNotifications();
-      await loadUnreadCount();
+      await refreshNotifications();
     };
 
     wsService.onInsertNotification = (data) {
@@ -214,7 +213,6 @@ class NotificationTabState extends State<NotificationTab> {
           itemExtent: kItemExtent,
           itemBuilder: (context, index) {
             if (index == notifications.length) {
-              // Loader cuối danh sách chiếm đúng chiều cao cố định
               return const Center(child: CircularProgressIndicator());
             }
 
@@ -252,6 +250,7 @@ class NotificationTabState extends State<NotificationTab> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -260,7 +259,7 @@ class NotificationTabState extends State<NotificationTab> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400,
+                              fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400, fontSize: 18
                             ),
                           ),
                           const SizedBox(height: 4),

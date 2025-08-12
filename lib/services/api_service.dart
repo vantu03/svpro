@@ -2,28 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:svpro/config.dart';
 import 'local_storage.dart';
-import 'package:http_parser/http_parser.dart';
 
 class ApiService {
-  static const baseUrl = 'https://api.sv.pro.vn';
-  //static const baseUrl = 'http://127.0.0.1:8000';
-
-  static MediaType getMediaType(String path) {
-    final ext = path.toLowerCase().split('.').last;
-
-    switch (ext) {
-      case 'jpg':
-      case 'jpeg':
-        return MediaType('image', 'jpeg');
-      case 'png':
-        return MediaType('image', 'png');
-      case 'webp':
-        return MediaType('image', 'webp');
-      default:
-        return MediaType('application', 'octet-stream');
-    }
-  }
 
   static Map<String, String> get authHeaders => {
     'Authorization': 'Bearer ${LocalStorage.auth_token}',
@@ -33,7 +15,7 @@ class ApiService {
   static Future<http.Response> login(String username, String password) async {
 
     return await http.post(
-      Uri.parse('$baseUrl/auth/login'),
+      Uri.parse('${Config.request_url}/auth/login'),
       headers: authHeaders,
       body:  jsonEncode({
         'username': username,
@@ -45,28 +27,37 @@ class ApiService {
 
   static Future<http.Response> getUser() async {
     return await http.get(
-      Uri.parse('$baseUrl/user/'),
+      Uri.parse('${Config.request_url}/user/'),
       headers: authHeaders,
     );
   }
 
   static Future<http.Response> logout() async {
     return await http.post(
-      Uri.parse('$baseUrl/auth/logout'),
+      Uri.parse('${Config.request_url}/auth/logout'),
       headers: authHeaders,
     );
   }
 
   static Future<http.Response> getSchedule() async {
     return await http.get(
-      Uri.parse('$baseUrl/user/schedule'),
+      Uri.parse('${Config.request_url}/user/schedule'),
       headers: authHeaders,
     );
   }
 
   static Future<http.Response> getBanners() async {
     return await http.get(
-      Uri.parse('$baseUrl/common/banners'),
+      Uri.parse('${Config.request_url}/common/banners'),
+      headers: authHeaders,
+    );
+  }
+
+
+  static Future<http.Response> getShipperInfo() async {
+    final uri = Uri.parse('${Config.request_url}/shipper/info');
+    return await http.get(
+      uri,
       headers: authHeaders,
     );
   }
@@ -84,7 +75,7 @@ class ApiService {
       String identity_image_front,
       String identity_image_back,
       ) async {
-    final uri = Uri.parse('$baseUrl/shipper/register');
+    final uri = Uri.parse('${Config.request_url}/shipper/register');
 
     final body = {
       'full_name': full_name,
@@ -111,14 +102,14 @@ class ApiService {
       XFile file,
       String fileType,
       ) async {
-    final uri = Uri.parse('$baseUrl/upload/image');
+    final uri = Uri.parse('${Config.request_url}/upload/image');
     final request = http.MultipartRequest('POST', uri);
     request.headers['Authorization'] = 'Bearer ${LocalStorage.auth_token}';
     request.fields['file_type'] = fileType;
 
     final bytes = await file.readAsBytes();
     final fileName = file.name;
-    final mediaType = getMediaType(fileName);
+    final mediaType = Config.getMediaType(fileName);
 
     final multipartFile = http.MultipartFile.fromBytes(
       'file',
@@ -133,20 +124,12 @@ class ApiService {
     return await http.Response.fromStream(streamedResponse);
   }
 
-  static Future<http.Response> getShipperInfo() async {
-    final uri = Uri.parse('$baseUrl/shipper/info');
-    return await http.get(
-      uri,
-      headers: authHeaders,
-    );
-  }
-
   static Future<http.Response> getNotifications({
     int offset = 0,
     int limit = 10,
     String? status,
   }) async {
-    final uri = Uri.parse('$baseUrl/notification/').replace(
+    final uri = Uri.parse('${Config.request_url}/notification/').replace(
       queryParameters: {
         'offset': offset.toString(),
         'limit': limit.toString(),
@@ -162,7 +145,7 @@ class ApiService {
   }
 
   static Future<http.Response> markNotificationRead(int notificationId) async {
-    final uri = Uri.parse('$baseUrl/notification/read');
+    final uri = Uri.parse('${Config.request_url}/notification/read');
     return await http.post(
       uri,
       headers: authHeaders,
@@ -170,8 +153,36 @@ class ApiService {
     );
   }
   static Future<http.Response> getUnreadCount() async {
-    final uri = Uri.parse('$baseUrl/notification/unread-count');
+    final uri = Uri.parse('${Config.request_url}/notification/unread-count');
     return await http.get(uri, headers: authHeaders);
   }
 
+
+  static Future<http.Response> getSenderInfo() async {
+    final uri = Uri.parse('${Config.request_url}/sender/info');
+    return await http.get(
+      uri,
+      headers: authHeaders,
+    );
+  }
+
+  static Future<http.Response> registerSender(
+      String full_name,
+      String phone_number,
+      String default_address,
+      ) async {
+    final uri = Uri.parse('${Config.request_url}/sender/register');
+
+    final body = {
+      'full_name': full_name,
+      'phone_number': phone_number,
+      'default_address': default_address,
+    };
+
+    return await http.post(
+      uri,
+      headers: authHeaders,
+      body: jsonEncode(body),
+    );
+  }
 }

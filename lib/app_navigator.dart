@@ -44,6 +44,33 @@ class AppNavigator {
     _post(() => ctx?.go(path));
   }
 
+  static void safePushWidget(Widget page, {bool fullscreenDialog = false}) {
+    if (!hasContext) {
+      return;
+    }
+    _post(() => Navigator.of(ctx!).push(
+      MaterialPageRoute(
+        builder: (_) => page,
+        fullscreenDialog: fullscreenDialog,
+      ),
+    ));
+  }
+
+  static void safeReplaceWidget(Widget page) {
+    if (!hasContext) return;
+    _post(() => Navigator.of(ctx!).pushReplacement(
+      MaterialPageRoute(builder: (_) => page),
+    ));
+  }
+
+  static void safeGoWidget(Widget page) {
+    if (!hasContext) return;
+    _post(() => Navigator.of(ctx!).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => page),
+          (route) => false,
+    ));
+  }
+
   //điều hướng còn tồn đọng
   static void flushPending() {
     if (!hasContext || pendingPath == null) return;

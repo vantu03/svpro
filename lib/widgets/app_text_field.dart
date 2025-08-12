@@ -12,6 +12,7 @@ class AppTextField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final String? hintText;
   final String? Function(String?)? customValidator;
+  final int? maxLines;
 
   const AppTextField({
     super.key,
@@ -25,6 +26,7 @@ class AppTextField extends StatelessWidget {
     this.inputFormatters,
     this.hintText,
     this.customValidator,
+    this.maxLines,
   });
 
   @override
@@ -43,12 +45,16 @@ class AppTextField extends StatelessWidget {
           border: const OutlineInputBorder(),
           counterText: "",
         ),
+        maxLines: maxLines,
         validator: (value) {
           if (isRequired && (value == null || value.trim().isEmpty)) {
             return 'Không được để trống';
           }
           if (minLength != null && value!.length < minLength!) {
             return 'Tối thiểu $minLength ký tự';
+          }
+          if (maxLength != null && value!.length > maxLength!) {
+            return 'Tối đa $minLength ký tự';
           }
           if (customValidator != null) {
             return customValidator!(value);

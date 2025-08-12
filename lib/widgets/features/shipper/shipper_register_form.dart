@@ -41,6 +41,7 @@ class _ShipperRegisterFormState extends State<ShipperRegisterForm> {
       return;
     }
 
+    AppNavigator.showLoadingDialog();
     try {
       final response = await ApiService.registerShipper(
         nameController.text.trim(),
@@ -65,6 +66,8 @@ class _ShipperRegisterFormState extends State<ShipperRegisterForm> {
       AppNavigator.pop(true);
     } catch (e) {
       AppNavigator.error('Không thể kết nối tới máy chủ');
+    } finally {
+      AppNavigator.hideDialog();
     }
   }
 
@@ -84,15 +87,9 @@ class _ShipperRegisterFormState extends State<ShipperRegisterForm> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Center(
-                    child: Column(
-                      children: const [
-                        Icon(Icons.app_registration, size: 48, color: Colors.blue),
-                        SizedBox(height: 8),
-                        Text(
-                          'Đăng ký Shipper',
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                    child: Text(
+                      'Đăng ký Shipper',
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     ),
                   ),
                   const SizedBox(height: 20),
