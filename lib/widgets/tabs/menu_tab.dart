@@ -96,7 +96,7 @@ class MenuTabState extends State<MenuTab> {
             },
           ),
 
-
+/*
           const Divider(),
 
           ListTile(
@@ -134,6 +134,7 @@ class MenuTabState extends State<MenuTab> {
                 title: 'Test ngay',
                 body: 'Thông báo hiển thị ngay lập tức!',
                 payload: jsonEncode(payload),
+                sound: 'sound_warning.wav',
               );
 
               // Gửi thông báo sau 5 giây
@@ -142,10 +143,13 @@ class MenuTabState extends State<MenuTab> {
                 title: 'Test sau 5s',
                 body: 'Thông báo được gửi sau 5 giây!',
                 scheduledDateTime: now.add(const Duration(seconds: 5)),
-                  payload: jsonEncode(payload),
+                payload: jsonEncode(payload),
+                sound: 'sound_schedule.wav',
               );
             },
           ),
+*/
+
         ],
       ),
     );

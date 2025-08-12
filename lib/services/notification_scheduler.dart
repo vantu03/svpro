@@ -48,6 +48,7 @@ class NotificationScheduler {
           body: 'Lịch ngày ${DateFormat('dd/MM').format(targetDate)}',
           scheduledDateTime: scheduledTime,
           payload: jsonEncode(payload),
+            sound: 'sound_schedule.wav'
         );
       }
 
@@ -87,6 +88,7 @@ class NotificationScheduler {
           body: 'Tuần tới sẽ bắt đầu từ $startStr kết thúc $endStr.${nextWeekEvents.isEmpty ? 'Bạn đã chuẩn bị đi chơi chưa?' : 'Bạn đã chuẩn bị tới đâu rồi...'}',
           scheduledDateTime: scheduledTime,
           payload: jsonEncode(payload),
+          sound: 'sound_schedule.wav'
         );
       }
     }

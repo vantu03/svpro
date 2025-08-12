@@ -13,6 +13,9 @@
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		3F6207D7A3387605494A3489 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7C94D7C10DCB5C29D2FE704 /* Pods_RunnerTests.framework */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
+		843F09F92E4B5F5A002AEC5A /* sound_warning.wav in Resources */ = {isa = PBXBuildFile; fileRef = 843F09F72E4B5F5A002AEC5A /* sound_warning.wav */; };
+		843F09FB2E4B5F5A002AEC5A /* sound_schedule.wav in Resources */ = {isa = PBXBuildFile; fileRef = 843F09F62E4B5F5A002AEC5A /* sound_schedule.wav */; };
+		84AB02F92E4B70D70052EA01 /* sound_up1.wav in Resources */ = {isa = PBXBuildFile; fileRef = 84AB02F82E4B70D70052EA01 /* sound_up1.wav */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
@@ -55,6 +58,9 @@
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
 		7EACCBC027761C60BE7D493E /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 		843A15AC2E3BC0D300D0991D /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
+		843F09F62E4B5F5A002AEC5A /* sound_schedule.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = sound_schedule.wav; sourceTree = "<group>"; };
+		843F09F72E4B5F5A002AEC5A /* sound_warning.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = sound_warning.wav; sourceTree = "<group>"; };
+		84AB02F82E4B70D70052EA01 /* sound_up1.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = sound_up1.wav; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
 		9740EEB31CF90195004384FC /* Generated.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Generated.xcconfig; path = Flutter/Generated.xcconfig; sourceTree = "<group>"; };
 		97C146EE1CF9000F007C117D /* Runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Runner.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -119,6 +125,9 @@
 		97C146E51CF9000F007C117D = {
 			isa = PBXGroup;
 			children = (
+				84AB02F82E4B70D70052EA01 /* sound_up1.wav */,
+				843F09F62E4B5F5A002AEC5A /* sound_schedule.wav */,
+				843F09F72E4B5F5A002AEC5A /* sound_warning.wav */,
 				9740EEB11CF90186004384FC /* Flutter */,
 				97C146F01CF9000F007C117D /* Runner */,
 				97C146EF1CF9000F007C117D /* Products */,
@@ -262,10 +271,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				84AB02F92E4B70D70052EA01 /* sound_up1.wav in Resources */,
 				97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */,
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
+				843F09F92E4B5F5A002AEC5A /* sound_warning.wav in Resources */,
+				843F09FB2E4B5F5A002AEC5A /* sound_schedule.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

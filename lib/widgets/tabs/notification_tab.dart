@@ -46,6 +46,8 @@ class NotificationTabState extends State<NotificationTab> {
   int offset = 0;
   final int limit = 10;
 
+  static const double kItemExtent = 88.0;
+
   @override
   void initState() {
     super.initState();
@@ -202,18 +204,18 @@ class NotificationTabState extends State<NotificationTab> {
           ],
         ),
       )
-          : RefreshIndicator(
+          :
+      RefreshIndicator(
         onRefresh: refreshNotifications,
         child: ListView.builder(
-          controller: scrollController, // QUAN TRỌNG
+          controller: scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
           itemCount: notifications.length + (isLoadingMore ? 1 : 0),
+          itemExtent: kItemExtent,
           itemBuilder: (context, index) {
             if (index == notifications.length) {
-              // item loader ở cuối danh sách
-              return const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: Center(child: CircularProgressIndicator()),
-              );
+              // Loader cuối danh sách chiếm đúng chiều cao cố định
+              return const Center(child: CircularProgressIndicator());
             }
 
             final item = notifications[index];
@@ -224,7 +226,9 @@ class NotificationTabState extends State<NotificationTab> {
                 if (isUnread) {
                   try {
                     setState(() => item.isRead = true);
-                    NotificationService.instance.setBadgeFromServer(NotificationService.instance.badgeCount - 1);
+                    NotificationService.instance.setBadgeFromServer(
+                      NotificationService.instance.badgeCount - 1,
+                    );
                     widget.onBadgeChanged?.call(widget.id, NotificationService.instance.badgeCount);
                     await ApiService.markNotificationRead(item.id);
                   } catch (e) {
@@ -234,31 +238,54 @@ class NotificationTabState extends State<NotificationTab> {
               },
               child: Container(
                 color: isUnread ? Colors.blue.shade50 : Colors.white,
-                child: ListTile(
-                  leading: Icon(
-                    isUnread ? Icons.mark_email_unread : Icons.mark_email_read,
-                    color: isUnread ? Colors.blue : Colors.grey,
-                  ),
-                  title: Text(
-                    item.title,
-                    style: TextStyle(
-                      fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400,
-                    ),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(item.content),
-                      const SizedBox(height: 4),
-                      Text(
-                        timeago.format(DateTime.parse(item.createdAt), locale: 'vi'),
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 40,
+                      child: Icon(
+                        isUnread ? Icons.mark_email_unread : Icons.mark_email_read,
+                        color: isUnread ? Colors.blue : Colors.grey,
                       ),
-                    ],
-                  ),
-                  trailing: isUnread
-                      ? const Icon(Icons.brightness_1, size: 10, color: Colors.blue)
-                      : null,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          // Content: tối đa 2 dòng, ellipsis
+                          Text(
+                            item.content,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          const SizedBox(height: 4),
+                          // Thời gian: 1 dòng, xám
+                          Text(
+                            timeago.format(DateTime.parse(item.createdAt), locale: 'vi'),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    if (isUnread)
+                      const Icon(Icons.brightness_1, size: 10, color: Colors.blue),
+                  ],
                 ),
               ),
             );

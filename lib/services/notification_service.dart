@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_app_badger/flutter_app_badger.dart';
+import 'package:app_badge_plus/app_badge_plus.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:svpro/app_navigator.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -138,6 +138,7 @@ class NotificationService {
     required String body,
     String? payload,
     bool bumpBadge = false,
+    String? sound
   }) async {
 
     if (bumpBadge) {
@@ -151,10 +152,12 @@ class NotificationService {
       importance: Importance.max,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',
-      sound: const RawResourceAndroidNotificationSound('notification_sound'),
-      playSound: true,
       channelShowBadge: true,
       number: badgeCount,
+      playSound: true,
+      sound: sound != null
+          ? RawResourceAndroidNotificationSound(sound.split(".")[0].trim())
+          : null,
     );
 
     final iosDetails = DarwinNotificationDetails(
@@ -162,6 +165,7 @@ class NotificationService {
       presentBadge: true,
       presentSound: true,
       badgeNumber: badgeCount,
+      sound: (sound ?? "default"),
     );
 
 
@@ -189,6 +193,8 @@ class NotificationService {
     String? payload,
     BuildContext? context,
     bumpBadge = false,
+    String? sound,
+
   }) async {
 
     if (scheduledDateTime.isBefore(DateTime.now())) {
@@ -208,20 +214,24 @@ class NotificationService {
       importance: Importance.max,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',
-      sound: const RawResourceAndroidNotificationSound('notification_sound'),
-      playSound: true,
       channelShowBadge: true,
       number: badgeCount,
+      playSound: true,
+      sound: sound != null
+          ? RawResourceAndroidNotificationSound(sound.split(".")[0].trim())
+          : null,
     );
 
     final iosDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+      sound: (sound ?? "default"),
       badgeNumber: badgeCount,
     );
 
     const winDetails = WindowsNotificationDetails(
+
     );
 
     final notificationDetails = NotificationDetails(
@@ -269,9 +279,9 @@ class NotificationService {
 
   Future<void> applyBadge() async {
     if (badgeCount <= 0) {
-      await FlutterAppBadger.removeBadge();
+      await AppBadgePlus.updateBadge(0);
     } else {
-      await FlutterAppBadger.updateBadgeCount(badgeCount);
+      await AppBadgePlus.updateBadge(badgeCount);
     }
   }
 
