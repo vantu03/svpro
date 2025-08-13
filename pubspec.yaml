@@ -37,6 +37,8 @@ dependencies:
   webview_flutter: ^4.13.0
   app_badge_plus: ^1.2.3
   http_parser: ^4.1.2
+  url_launcher: ^6.3.2
+  animate_do: ^4.2.0
 
 dev_dependencies:
   flutter_test:

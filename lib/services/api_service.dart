@@ -167,16 +167,16 @@ class ApiService {
   }
 
   static Future<http.Response> registerSender(
-      String full_name,
-      String phone_number,
-      String default_address,
+      String fullName,
+      String phoneNumber,
+      String defaultAddress,
       ) async {
     final uri = Uri.parse('${Config.request_url}/sender/register');
 
     final body = {
-      'full_name': full_name,
-      'phone_number': phone_number,
-      'default_address': default_address,
+      'full_name': fullName,
+      'phone_number': phoneNumber,
+      'default_address': defaultAddress,
     };
 
     return await http.post(
@@ -185,4 +185,51 @@ class ApiService {
       body: jsonEncode(body),
     );
   }
+
+  static Future<http.Response> createOrder(
+    {
+      String? pickupAddress,
+      int? itemValue,
+      int? shippingFee,
+      String? note,
+      required String receiverName,
+      required String receiverPhone,
+      required String receiverAddress,
+    }
+  ) async {
+    final uri = Uri.parse('${Config.request_url}/order/create');
+
+    return http.post(
+      uri,
+      headers: authHeaders,
+      body: jsonEncode({
+        'pickup_address'  : pickupAddress?.trim(),
+        'item_value'      : itemValue,
+        'shipping_fee'    : shippingFee,
+        'note'            : note?.trim(),
+        'receiver_name'   : receiverName.trim(),
+        'receiver_phone'  : receiverPhone.trim(),
+        'receiver_address': receiverAddress.trim(),
+      }),
+    );
+  }
+
+
+  static Future<http.Response> getOrders({
+    int offset = 0,
+    int limit = 10,
+  }) async {
+    final uri = Uri.parse('${Config.request_url}/order/').replace(
+      queryParameters: {
+        'offset': offset.toString(),
+        'limit': limit.toString(),
+      },
+    );
+
+    return await http.get(
+      uri,
+      headers: authHeaders,
+    );
+  }
+
 }

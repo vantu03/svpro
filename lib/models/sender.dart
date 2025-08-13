@@ -3,7 +3,7 @@ class SenderModel {
   final int userId;
   final String fullName;
   final String phoneNumber;
-  final String? defaultAddress;
+  final String defaultAddress;
   final String status;
   final String createdAt;
   final String updatedAt;
@@ -13,7 +13,7 @@ class SenderModel {
     required this.userId,
     required this.fullName,
     required this.phoneNumber,
-    this.defaultAddress,
+    required this.defaultAddress,
     required this.status,
     required this.createdAt,
     required this.updatedAt,
@@ -26,7 +26,7 @@ class SenderModel {
       userId: json['user_id'] as int,
       fullName: json['full_name'].toString(),
       phoneNumber: json['phone_number'],
-      defaultAddress: json['default_address'],
+      defaultAddress: json['default_address'].toString(),
       status: json['status'],
       createdAt: json['create_at'],
       updatedAt: json['update_at'],

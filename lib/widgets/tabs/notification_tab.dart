@@ -259,7 +259,7 @@ class NotificationTabState extends State<NotificationTab> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400, fontSize: 18
+                              fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400, fontSize: 14
                             ),
                           ),
                           const SizedBox(height: 4),

@@ -156,9 +156,9 @@ class LoginScreenState extends State<LoginScreen> {
     }
 
     setState(() => isLoading = true);
-    final response = await ApiService.login(username, password);
 
     try {
+      final response = await ApiService.login(username, password);
       var jsonData = jsonDecode(response.body);
       if (jsonData['detail']['status']) {
         LocalStorage.auth_token = jsonData['detail']['data']['token'];
