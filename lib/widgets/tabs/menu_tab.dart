@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:svpro/app_core.dart';
 import 'package:svpro/app_navigator.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/services/local_storage.dart';
@@ -40,19 +41,12 @@ class MenuTabState extends State<MenuTab> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          widget.label,
-          style: const TextStyle(
-              color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.blueAccent,
+        title: Text(widget.label),
         centerTitle: false,
       ),
-      backgroundColor: Colors.white,
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         children: [
-          const Divider(),
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('Cài đặt'),
@@ -81,7 +75,7 @@ class MenuTabState extends State<MenuTab> {
                       AppNavigator.error(jsonData['detail']['message']);
                     }
                   } catch (e) {
-                    print(e);
+                    debugPrint("error: $e");
                     AppNavigator.error('Không thể kết nối tới máy chủ');
                   } finally {
 
@@ -95,7 +89,7 @@ class MenuTabState extends State<MenuTab> {
               );
             },
           ),
-
+/*
           const Divider(),
 
           ListTile(
@@ -147,7 +141,34 @@ class MenuTabState extends State<MenuTab> {
               );
             },
           ),
-
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(
+              "Test Snackbar",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue.shade700),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.info_outline, color: Colors.blue),
+            title: const Text('Test Info Snackbar'),
+            onTap: () => AppNavigator.info("Đây là thông báo kiểu Info"),
+          ),
+          ListTile(
+            leading: const Icon(Icons.check_circle, color: Colors.green),
+            title: const Text('Test Success Snackbar'),
+            onTap: () => AppNavigator.success("Đây là thông báo kiểu Success"),
+          ),
+          ListTile(
+            leading: const Icon(Icons.error, color: Colors.red),
+            title: const Text('Test Error Snackbar'),
+            onTap: () => AppNavigator.error("Đây là thông báo kiểu Error"),
+          ),
+          ListTile(
+            leading: const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            title: const Text('Test Warning Snackbar'),
+            onTap: () => AppNavigator.warning("Đây là thông báo kiểu Warning"),
+          ),
+*/
         ],
       ),
     );

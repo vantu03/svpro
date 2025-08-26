@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:svpro/app_navigator.dart';
+import 'package:svpro/app_core.dart';
 import 'package:svpro/models/notification.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/services/notification_service.dart';
@@ -46,7 +47,9 @@ class NotificationTabState extends State<NotificationTab> {
   int offset = 0;
   final int limit = 10;
 
-  static const double kItemExtent = 110.0;
+  static const double kItemExtent = 88.0;
+
+  String? subId;
 
   @override
   void initState() {
@@ -54,11 +57,9 @@ class NotificationTabState extends State<NotificationTab> {
 
     timeago.setLocaleMessages('vi', timeago.ViMessages());
 
-    wsService.onLoadNotification = () async {
-      await refreshNotifications();
-    };
+    subId = wsService.addSubscription(refreshNotifications);
 
-    wsService.onInsertNotification = (data) {
+    wsService.onNotificationInserted = (data) {
       try {
         final notification = NotificationModel.fromJson(data);
         NotificationService.instance.setBadgeFromServer(NotificationService.instance.badgeCount + 1);
@@ -67,7 +68,7 @@ class NotificationTabState extends State<NotificationTab> {
           notifications.insert(0, notification);
         });
       } catch (e) {
-        debugPrint(' Lỗi khi xử lý thông báo từ socket: $e');
+        debugPrint("error: $e");
       }
     };
 
@@ -104,14 +105,19 @@ class NotificationTabState extends State<NotificationTab> {
         widget.onBadgeChanged?.call(widget.id, NotificationService.instance.badgeCount);
       }
     } catch (e) {
-      debugPrint('loadUnreadCount error: $e');
+      debugPrint("error: $e");
     }
   }
 
   Future<void> loadNotifications({bool initial = false}) async {
     try {
-      final response = await ApiService.getNotifications(offset: offset, limit: limit);
-      final jsonData = jsonDecode(response.body);
+      final res = await ApiService.getNotifications(offset: offset, limit: limit);
+
+      if (res.statusCode == 422) {
+        AppCore.handleValidationError(res.body);
+        return;
+      }
+      final jsonData = jsonDecode(res.body);
 
       if (jsonData['detail']['status']) {
         final List<dynamic> data = jsonData['detail']['data'];
@@ -126,18 +132,13 @@ class NotificationTabState extends State<NotificationTab> {
           }
           offset += items.length;
           hasMore = items.length == limit;
-          isLoading = false;
-          isLoadingMore = false;
         });
       } else {
-        setState(() {
-          isLoading = false;
-          isLoadingMore = false;
-        });
         AppNavigator.error(jsonData['detail']['message']);
       }
     } catch (e) {
-      debugPrint('$e');
+      debugPrint("error: $e");
+    } finally {
       setState(() {
         isLoading = false;
         isLoadingMore = false;
@@ -177,17 +178,19 @@ class NotificationTabState extends State<NotificationTab> {
   void dispose() {
     scrollController.dispose();
     timer?.cancel();
+    if (subId != null) {
+      wsService.removeSubscription(subId!);
+    }
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.blueAccent,
+        title: Text(widget.label),
         centerTitle: false,
       ),
-      backgroundColor: Colors.white,
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : notifications.isEmpty
@@ -230,13 +233,13 @@ class NotificationTabState extends State<NotificationTab> {
                     widget.onBadgeChanged?.call(widget.id, NotificationService.instance.badgeCount);
                     await ApiService.markNotificationRead(item.id);
                   } catch (e) {
-                    debugPrint('$e');
+                    debugPrint("error: $e");
                   }
                 }
               },
               child: Container(
                 color: isUnread ? Colors.blue.shade50 : Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -259,10 +262,10 @@ class NotificationTabState extends State<NotificationTab> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400, fontSize: 14
+                              fontWeight: FontWeight.w600, fontSize: 14
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 2),
                           // Content: tối đa 2 dòng, ellipsis
                           Text(
                             item.content,
@@ -270,7 +273,7 @@ class NotificationTabState extends State<NotificationTab> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(fontSize: 14),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 2),
                           // Thời gian: 1 dòng, xám
                           Text(
                             timeago.format(DateTime.parse(item.createdAt), locale: 'vi'),

@@ -24,9 +24,7 @@ class FeaturePrivacyPolicyState extends State<FeaturePrivacyPolicy> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.label,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.blueAccent,
+        title: Text(widget.label),
         centerTitle: false,
       ),
       body: AppWebView(

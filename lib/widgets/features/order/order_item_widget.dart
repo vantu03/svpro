@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:svpro/config.dart';
+import 'package:svpro/app_core.dart';
 import 'package:svpro/models/order.dart';
+import 'package:svpro/widgets/call_phone_widget.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:intl/intl.dart';
 
 class OrderItemWidget extends StatelessWidget {
   final OrderModel order;
@@ -16,7 +16,7 @@ class OrderItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusInfo = Config.orderStatusInfo[order.status];
+    final statusInfo = AppCore.orderStatusInfo[order.status];
     final statusName = statusInfo?['name'] ?? 'Không xác định';
     final statusColor = statusInfo?['color'] ?? Colors.grey;
 
@@ -53,8 +53,15 @@ class OrderItemWidget extends StatelessWidget {
               ),
               const SizedBox(height: 6),
 
-              // Người nhận + SĐT
-              Text('${order.receiverName} - ${order.receiverPhone}'),
+              // Người nhận + SĐT (dùng CallPhoneWidget)
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(order.receiverName),
+                  ),
+                  CallPhoneWidget(phoneNumber: order.receiverPhone),
+                ],
+              ),
 
               // Địa chỉ
               Text(
@@ -67,7 +74,7 @@ class OrderItemWidget extends StatelessWidget {
               const SizedBox(height: 6),
 
               Text(
-                '${Config.formatMoney(order.itemValue)}đ',
+                '${AppCore.formatMoney(order.itemValue)}đ',
                 style: const TextStyle(
                   color: Colors.red,
                   fontWeight: FontWeight.bold,

@@ -1,63 +1,93 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:svpro/app_navigator.dart';
+import 'package:svpro/widgets/features/shipper/shipper_detail_widget.dart';
+import 'package:svpro/widgets/features/shipper/shipper_pending_list_widget.dart';
 
 class ApprovedApplicationWidget extends StatelessWidget {
-  final Map<String, dynamic> application;
-
-  const ApprovedApplicationWidget({
-    super.key,
-    required this.application,
-  });
+  const ApprovedApplicationWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final formatter = DateFormat('dd/MM/yyyy');
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Center(
-            child: Column(
-              children: [
-                Icon(Icons.verified_user, color: Colors.green, size: 60),
-                SizedBox(height: 8),
-                Text(
-                  "Bạn đã được duyệt làm Shipper",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
+    return Column(
+      children: [
+        // === Phần trên: Các nút chức năng ===
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              menuButton(
+                icon: Icons.person,
+                label: "Hồ sơ cá nhân",
+                onTap: () {
+                  AppNavigator.safePushWidget(const ShipperDetailWidget());
+                },
+              ),
+              menuButton(
+                icon: Icons.local_shipping,
+                label: "Đơn đang giao",
+                onTap: () {},
+              ),
+              menuButton(
+                icon: Icons.history,
+                label: "Lịch sử đơn",
+                onTap: () {},
+              ),
+            ],
           ),
-          const SizedBox(height: 24),
-          Text("Thông tin cá nhân", style: Theme.of(context).textTheme.titleMedium),
-          const Divider(),
-          infoRow("Họ tên", application['full_name']),
-          infoRow("Số điện thoại", application['phone_number']),
-          infoRow("CMND/CCCD", application['identity_number']),
-          infoRow("Ngày sinh", application['date_of_birth'] != null ? formatter.format(DateTime.parse(application['date_of_birth'])) : "Chưa có"),
-          infoRow("Giới tính", application['gender'] ?? "Chưa rõ"),
-          infoRow("Địa chỉ", application['address']),
-          const SizedBox(height: 16),
-          Text("Thông tin phương tiện", style: Theme.of(context).textTheme.titleMedium),
-          const Divider(),
-          infoRow("Loại xe", application['vehicle_type']),
-          infoRow("Biển số", application['license_plate']),
-          const SizedBox(height: 16),
-          infoRow("Ngày đăng ký", application['created_at'] != null ? formatter.format(DateTime.parse(application['created_at'])) : "Không rõ"),
-        ],
-      ),
+        ),
+
+        const Divider(height: 1),
+
+        // === Heading của danh sách đơn chờ ===
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            children: [
+              const Icon(Icons.schedule, color: Colors.orange),
+              const SizedBox(width: 6),
+              Text(
+                'Danh sách đơn chờ',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.orange.shade800,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // === Danh sách đơn pending ===
+        const Expanded(
+          child: OrderPendingListWidget(),
+        ),
+      ],
     );
   }
 
-  Widget infoRow(String label, String? value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Expanded(flex: 3, child: Text(label)),
-          Expanded(flex: 5, child: Text(value ?? "-", style: const TextStyle(fontWeight: FontWeight.w500))),
-        ],
+  Widget menuButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 28, color: Colors.blue),
+            const SizedBox(height: 4),
+            Text(label, style: const TextStyle(fontSize: 12)),
+          ],
+        ),
       ),
     );
   }

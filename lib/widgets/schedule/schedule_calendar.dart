@@ -118,35 +118,25 @@ class ScheduleCalendarState extends State<ScheduleCalendar> {
             },
           ),
         ),
-
         Center(
-          child: IconButton(
+          child: TextButton.icon(
             onPressed: () {
               setState(() {
-                calendarFormat = isMonth
-                    ? CalendarFormat.week
-                    : CalendarFormat.month;
+                calendarFormat =
+                isMonth ? CalendarFormat.week : CalendarFormat.month;
               });
             },
-            icon: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  isMonth ? 'Ẩn bớt' : 'Hiện thêm', style: TextStyle(color: Colors.blue),
-                ),
-                const SizedBox(width: 4),
-                Icon(
-                  isMonth
-                      ? Icons.keyboard_arrow_up
-                      : Icons.keyboard_arrow_down,
-                  size: 20,
-                  color: Colors.blue,
-                ),
-              ],
+            icon: Icon(
+              isMonth ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+              size: 20,
+              color: Colors.blue,
+            ),
+            label: Text(
+              isMonth ? 'Ẩn bớt' : 'Hiện thêm',
+              style: const TextStyle(color: Colors.blue),
             ),
           ),
-        )
-
+        ),
       ],
     );
   }

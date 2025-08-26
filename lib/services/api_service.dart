@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:svpro/config.dart';
+import 'package:svpro/app_core.dart';
 import 'local_storage.dart';
 
 class ApiService {
@@ -12,14 +12,15 @@ class ApiService {
     'Content-Type': 'application/json'
   };
 
-  static Future<http.Response> login(String username, String password) async {
+  static Future<http.Response> login(String username, String password, deviceInfo) async {
 
     return await http.post(
-      Uri.parse('${Config.request_url}/auth/login'),
+      Uri.parse('${AppCore.request_url}/auth/login'),
       headers: authHeaders,
       body:  jsonEncode({
         'username': username,
         'password': password,
+        'device_info': deviceInfo,
         'fcm_token': LocalStorage.fcm_token,
       }),
     );
@@ -27,35 +28,42 @@ class ApiService {
 
   static Future<http.Response> getUser() async {
     return await http.get(
-      Uri.parse('${Config.request_url}/user/'),
+      Uri.parse('${AppCore.request_url}/user/'),
       headers: authHeaders,
     );
   }
 
   static Future<http.Response> logout() async {
     return await http.post(
-      Uri.parse('${Config.request_url}/auth/logout'),
+      Uri.parse('${AppCore.request_url}/auth/logout'),
       headers: authHeaders,
     );
   }
 
   static Future<http.Response> getSchedule() async {
     return await http.get(
-      Uri.parse('${Config.request_url}/user/schedule'),
+      Uri.parse('${AppCore.request_url}/user/schedule'),
       headers: authHeaders,
     );
   }
 
   static Future<http.Response> getBanners() async {
     return await http.get(
-      Uri.parse('${Config.request_url}/common/banners'),
+      Uri.parse('${AppCore.request_url}/common/banners'),
+      headers: authHeaders,
+    );
+  }
+
+  static Future<http.Response> getUpdateInfo() async {
+    return await http.get(
+      Uri.parse('${AppCore.request_url}/common/update/version'),
       headers: authHeaders,
     );
   }
 
 
   static Future<http.Response> getShipperInfo() async {
-    final uri = Uri.parse('${Config.request_url}/shipper/info');
+    final uri = Uri.parse('${AppCore.request_url}/shipper/info');
     return await http.get(
       uri,
       headers: authHeaders,
@@ -75,7 +83,7 @@ class ApiService {
       String identity_image_front,
       String identity_image_back,
       ) async {
-    final uri = Uri.parse('${Config.request_url}/shipper/register');
+    final uri = Uri.parse('${AppCore.request_url}/shipper/register');
 
     final body = {
       'full_name': full_name,
@@ -102,14 +110,14 @@ class ApiService {
       XFile file,
       String fileType,
       ) async {
-    final uri = Uri.parse('${Config.request_url}/upload/image');
+    final uri = Uri.parse('${AppCore.request_url}/upload/image');
     final request = http.MultipartRequest('POST', uri);
     request.headers['Authorization'] = 'Bearer ${LocalStorage.auth_token}';
     request.fields['file_type'] = fileType;
 
     final bytes = await file.readAsBytes();
     final fileName = file.name;
-    final mediaType = Config.getMediaType(fileName);
+    final mediaType = AppCore.getMediaType(fileName);
 
     final multipartFile = http.MultipartFile.fromBytes(
       'file',
@@ -129,7 +137,7 @@ class ApiService {
     int limit = 10,
     String? status,
   }) async {
-    final uri = Uri.parse('${Config.request_url}/notification/').replace(
+    final uri = Uri.parse('${AppCore.request_url}/notification/').replace(
       queryParameters: {
         'offset': offset.toString(),
         'limit': limit.toString(),
@@ -145,7 +153,7 @@ class ApiService {
   }
 
   static Future<http.Response> markNotificationRead(int notificationId) async {
-    final uri = Uri.parse('${Config.request_url}/notification/read');
+    final uri = Uri.parse('${AppCore.request_url}/notification/read');
     return await http.post(
       uri,
       headers: authHeaders,
@@ -153,13 +161,13 @@ class ApiService {
     );
   }
   static Future<http.Response> getUnreadCount() async {
-    final uri = Uri.parse('${Config.request_url}/notification/unread-count');
+    final uri = Uri.parse('${AppCore.request_url}/notification/unread-count');
     return await http.get(uri, headers: authHeaders);
   }
 
 
-  static Future<http.Response> getSenderInfo() async {
-    final uri = Uri.parse('${Config.request_url}/sender/info');
+  static Future<http.Response> getSender() async {
+    final uri = Uri.parse('${AppCore.request_url}/sender/');
     return await http.get(
       uri,
       headers: authHeaders,
@@ -171,7 +179,7 @@ class ApiService {
       String phoneNumber,
       String defaultAddress,
       ) async {
-    final uri = Uri.parse('${Config.request_url}/sender/register');
+    final uri = Uri.parse('${AppCore.request_url}/sender/register');
 
     final body = {
       'full_name': fullName,
@@ -195,9 +203,14 @@ class ApiService {
       required String receiverName,
       required String receiverPhone,
       required String receiverAddress,
+
+      required double pickupLat,
+      required double pickupLng,
+      double? receiverLat,
+      double? receiverLng,
     }
   ) async {
-    final uri = Uri.parse('${Config.request_url}/order/create');
+    final uri = Uri.parse('${AppCore.request_url}/sender/order/create');
 
     return http.post(
       uri,
@@ -210,6 +223,10 @@ class ApiService {
         'receiver_name'   : receiverName.trim(),
         'receiver_phone'  : receiverPhone.trim(),
         'receiver_address': receiverAddress.trim(),
+        'pickup_lat'       : pickupLat,
+        'pickup_lng'       : pickupLng,
+        if (receiverLat != null) 'receiver_lat': receiverLat,
+        if (receiverLng != null) 'receiver_lng': receiverLng,
       }),
     );
   }
@@ -219,7 +236,7 @@ class ApiService {
     int offset = 0,
     int limit = 10,
   }) async {
-    final uri = Uri.parse('${Config.request_url}/order/').replace(
+    final uri = Uri.parse('${AppCore.request_url}/sender/orders').replace(
       queryParameters: {
         'offset': offset.toString(),
         'limit': limit.toString(),
@@ -229,6 +246,49 @@ class ApiService {
     return await http.get(
       uri,
       headers: authHeaders,
+    );
+  }
+
+  static Future<http.Response> cancelOrder(int orderId) async {
+    final uri = Uri.parse('${AppCore.request_url}/sender/order/$orderId/cancel');
+    return await http.post(
+      uri,
+      headers: authHeaders,
+      body: jsonEncode({}),
+    );
+  }
+
+  static Future<http.Response> getShipper() async {
+    final uri = Uri.parse('${AppCore.request_url}/shipper/');
+    return await http.get(
+      uri,
+      headers: authHeaders,
+    );
+  }
+
+  static Future<http.Response> getPendingOrders({
+    int offset = 0,
+    int limit = 10,
+  }) async {
+    final uri = Uri.parse('${AppCore.request_url}/shipper/orders').replace(
+      queryParameters: {
+        'offset': offset.toString(),
+        'limit': limit.toString(),
+      },
+    );
+
+    return await http.get(
+      uri,
+      headers: authHeaders,
+    );
+  }
+
+  static Future<http.Response> acceptOrder(int orderId) async {
+    final uri = Uri.parse('${AppCore.request_url}/shipper/orders/$orderId/accept');
+    return await http.post(
+      uri,
+      headers: authHeaders,
+      body: jsonEncode({}),
     );
   }
 

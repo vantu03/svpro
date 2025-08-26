@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:svpro/config.dart';
+import 'package:svpro/app_navigator.dart';
+import 'package:svpro/app_core.dart';
 import 'package:svpro/models/order.dart';
+import 'package:svpro/services/api_service.dart';
 import 'package:svpro/widgets/call_phone_widget.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -14,22 +18,43 @@ class OrderDetailWidget extends StatefulWidget {
 }
 
 class OrderDetailWidgetState extends State<OrderDetailWidget> {
+
+  Future<void> canceledOrder() async {
+    AppNavigator.showLoadingDialog();
+    try {
+      final res = await ApiService.cancelOrder(widget.order.id);
+
+      if (res.statusCode == 422) {
+        AppCore.handleValidationError(res.body);
+        return;
+      }
+      final jsonData = jsonDecode(res.body);
+      if (jsonData['detail']['status']) {
+        AppNavigator.success(jsonData['detail']['message']);
+        setState(() {
+          widget.order.status = jsonData['detail']['data']['status'];
+        });
+      } else {
+        AppNavigator.error(jsonData['detail']['message']);
+      }
+    } catch (e) {
+      debugPrint("error: $e");
+    } finally {
+      AppNavigator.hideDialog();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final statusInfo = Config.orderStatusInfo[widget.order.status];
+    final statusInfo = AppCore.orderStatusInfo[widget.order.status];
     final statusName = statusInfo?['name'] ?? 'Không xác định';
     final statusColor = statusInfo?['color'] ?? Colors.grey;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Chi tiết đơn',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.blueAccent,
+        title: const Text('Chi tiết đơn'),
         centerTitle: false,
       ),
-      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: ListView(
@@ -49,7 +74,7 @@ class OrderDetailWidgetState extends State<OrderDetailWidget> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
 
             // Thời gian tạo
             Text(
@@ -63,14 +88,14 @@ class OrderDetailWidgetState extends State<OrderDetailWidget> {
             const SizedBox(height: 6),
             Text(widget.order.receiverName),
 
-            CallPhoneWidget(phoneNumber: widget.order.shipper!.phoneNumber ?? ''),
+            CallPhoneWidget(phoneNumber: widget.order.receiverPhone),
             Text(widget.order.receiverAddress),
             const Divider(height: 24),
 
             // Giá trị đơn
             const Text('Giá trị đơn hàng', style: TextStyle(fontWeight: FontWeight.bold)),
             Text(
-              '${Config.formatMoney(widget.order.itemValue)}đ',
+              '${AppCore.formatMoney(widget.order.itemValue)}đ',
               style: const TextStyle(color: Colors.red, fontSize: 16),
             ),
             const SizedBox(height: 8),
@@ -78,7 +103,7 @@ class OrderDetailWidgetState extends State<OrderDetailWidget> {
             // Phí ship
             const Text('Phí ship', style: TextStyle(fontWeight: FontWeight.bold)),
             Text(
-              '${Config.formatMoney(widget.order.shippingFee ?? 0)}đ',
+              '${AppCore.formatMoney(widget.order.shippingFee ?? 0)}đ',
               style: const TextStyle(color: Colors.red, fontSize: 16),
             ),
             const Divider(height: 24),
@@ -149,7 +174,7 @@ class OrderDetailWidgetState extends State<OrderDetailWidget> {
                   backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8), // Bo góc
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 onPressed: () {},
@@ -163,11 +188,11 @@ class OrderDetailWidgetState extends State<OrderDetailWidget> {
             ],
 
             // Nút hủy đơn
-            if (widget.order.status == 'pending')
+            if (widget.order.status == 'pending' || widget.order.status == 'accepted_pending')
               ElevatedButton.icon(
                 icon: const Icon(Icons.cancel, color: Colors.red),
-                label: const Text('Huỷ đơn'),
-                onPressed: () {},
+                label: const Text('Huỷ đơn', style: TextStyle(color: Colors.red),),
+                onPressed: canceledOrder,
               ),
           ],
         ),

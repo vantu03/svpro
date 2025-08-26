@@ -51,8 +51,6 @@ class NotificationPermissionService {
     FirebaseMessaging.instance.getToken().then((token) async {
       if (token != null) {
         LocalStorage.fcm_token = token;
-      } else {
-        print('Da bi chan lay token');
       }
     });
 

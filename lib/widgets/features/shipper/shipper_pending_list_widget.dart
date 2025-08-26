@@ -1,23 +1,25 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:svpro/app_core.dart';
 import 'package:svpro/models/order.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/app_navigator.dart';
-import 'package:svpro/widgets/features/order/order_item_widget.dart';
+import 'package:svpro/services/location_service.dart';
 import 'package:svpro/ws/ws_client.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import 'order_detail_widget.dart';
+import 'order_pending_item_widget.dart';
 
-class OrderListWidget extends StatefulWidget {
-  const OrderListWidget({super.key});
+class OrderPendingListWidget extends StatefulWidget {
+  const OrderPendingListWidget({super.key});
 
   @override
-  State<OrderListWidget> createState() => OrderListWidgetState();
+  State<OrderPendingListWidget> createState() => OrderPendingListWidgetState();
 }
 
-class OrderListWidgetState extends State<OrderListWidget> {
+class OrderPendingListWidgetState extends State<OrderPendingListWidget> {
+
   final int limit = 10;
   bool isLoading = true;
   bool isLoadingMore = false;
@@ -36,40 +38,45 @@ class OrderListWidgetState extends State<OrderListWidget> {
     scrollController.addListener(onScroll);
     loadOrders(initial: true);
 
-    wsService.onOrderStatusChanged = (payload) {
-      final int orderId = payload['order_id'];
-      final String status = payload['status'];
+    subId = wsService.addSubscription(() async {
+      wsService.send("subscribe_order_pending", {});
+      await refreshOrders();
+    });
 
+    wsService.onOrderRemoved = (payload) {
+      int orderId = payload['order_id'];
       setState(() {
-        final idx = orders.indexWhere((o) => o.id == orderId);
-        if (idx != -1) {
-          orders[idx].status = status;
-        }
+        orders.removeWhere((o) => o.id == orderId);
       });
     };
-
-    wsService.onOrderInserted = (data) {
-      try {
-        final order = OrderModel.fromJson(data);
-        setState(() {
-          orders.insert(0, order);
+    _initList();
+  }
+  Future<void> _initList() async {
+    LocationService.locationStream = await LocationService.startLocationStream((pos) {
+      setState(() {
+        LocationService.positionStream = pos;
+        wsService.send("location", {
+          "latitude": pos.latitude,
+          "longitude": pos.longitude,
+          "timestamp": DateTime.now().toIso8601String(),
         });
-      } catch (e) {
-        debugPrint("error: $e");
-      }
-    };
-
-    subId = wsService.addSubscription(refreshOrders);
+      });
+    });
   }
 
   Future<void> loadOrders({bool initial = false}) async {
     try {
-      final res = await ApiService.getOrders(offset: offset, limit: limit);
+      // 🔹 Gọi API lấy đơn pending cho shipper
+      final res = await ApiService.getPendingOrders(
+        offset: offset,
+        limit: limit,
+      );
 
       if (res.statusCode == 422) {
         AppCore.handleValidationError(res.body);
         return;
       }
+
       final jsonData = jsonDecode(res.body);
 
       if (jsonData['detail']['status']) {
@@ -89,8 +96,9 @@ class OrderListWidgetState extends State<OrderListWidget> {
         AppNavigator.error(jsonData['detail']['message']);
       }
     } catch (e) {
-      debugPrint('OrderListWidget error: $e');
+      debugPrint('OrderPendingListWidget error: $e');
     } finally {
+
       setState(() {
         isLoading = false;
         isLoadingMore = false;
@@ -127,11 +135,13 @@ class OrderListWidgetState extends State<OrderListWidget> {
   void dispose() {
     scrollController.dispose();
     super.dispose();
-    wsService.onOrderStatusChanged = null;
-    wsService.onOrderInserted = null;
+
+    wsService.send("unsubscribe_order_pending", {});
     if (subId != null) {
       wsService.removeSubscription(subId!);
     }
+    wsService.onOrderRemoved = null;
+    LocationService.locationStream?.cancel();
   }
 
   @override
@@ -142,7 +152,7 @@ class OrderListWidgetState extends State<OrderListWidget> {
 
     if (orders.isEmpty) {
       return const Center(
-        child: Text('Chưa có đơn hàng', style: TextStyle(color: Colors.grey)),
+        child: Text('Không có đơn chờ nhận', style: TextStyle(color: Colors.grey)),
       );
     }
 
@@ -160,14 +170,28 @@ class OrderListWidgetState extends State<OrderListWidget> {
               child: Center(child: CircularProgressIndicator()),
             );
           }
-          return OrderItemWidget(
+          return OrderPendingItemWidget(
             order: orders[index],
-            onTap: () {
-              AppNavigator.safePushWidget(OrderDetailWidget(order: orders[index],));
-            },
           );
+
         },
       ),
     );
+  }
+
+  Future<void> acceptOrder(int orderId) async {
+    try {
+      final res = await ApiService.acceptOrder(orderId);
+      final data = jsonDecode(res.body);
+
+      if (data['detail']['status']) {
+        AppNavigator.success("Nhận đơn thành công!");
+        refreshOrders();
+      } else {
+        AppNavigator.error(data['detail']['message']);
+      }
+    } catch (e) {
+      AppNavigator.error("Lỗi khi nhận đơn: $e");
+    }
   }
 }

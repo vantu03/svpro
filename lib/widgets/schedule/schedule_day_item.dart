@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:svpro/app_theme.dart';
 import 'package:svpro/models/schedule.dart';
-import 'package:svpro/widgets/schedule/schedule_day_view.dart';
 
 class ItemContent extends StatefulWidget {
   final Schedule? event;
@@ -25,7 +25,7 @@ class ItemContentState extends State<ItemContent> {
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
-        color: getColorByDate(widget.date),
+        color: AppTheme.getColorByDate(widget.date),
         borderRadius: BorderRadius.circular(8.0),
       ),
       child: widget.event == null

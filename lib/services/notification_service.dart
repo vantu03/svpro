@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:svpro/app_navigator.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:url_launcher/url_launcher.dart';
 
 class NotificationService {
   static final NotificationService instance = NotificationService.internal();
@@ -100,7 +101,6 @@ class NotificationService {
 
   void handlePayload(String? payload) {
     if (payload == null || payload.isEmpty) return;
-
     try {
       final data = jsonDecode(payload);
       final action = data['action'] ?? 'navigate';
@@ -112,18 +112,31 @@ class NotificationService {
           AppNavigator.safeGo(uri.toString());
           break;
         }
+
         case 'open_url': {
           final url = data['url'] as String?;
           if (url != null && url.isNotEmpty) {
-
+            final uri = Uri.parse(url);
+            launchUrl(uri, mode: LaunchMode.inAppWebView);
           }
           break;
         }
+
+        case 'open_url_blank': {
+          final url = data['url'] as String?;
+          if (url != null && url.isNotEmpty) {
+            final uri = Uri.parse(url);
+            launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
+          break;
+        }
+
         default: {
           AppNavigator.safeGo(payload);
         }
       }
     } catch (e) {
+      debugPrint("error: $e");
 
       Timer(const Duration(seconds: 5), () {
         AppNavigator.warning(e.toString());
@@ -198,7 +211,7 @@ class NotificationService {
   }) async {
 
     if (scheduledDateTime.isBefore(DateTime.now())) {
-      print('Thời gian đặt thông báo đã trôi qua: $scheduledDateTime');
+      debugPrint("warning: The notification schedule is overdue( $scheduledDateTime)");
       return;
     }
 

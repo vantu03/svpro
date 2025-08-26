@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:svpro/app_navigator.dart';
+import 'package:svpro/app_core.dart';
 import 'package:svpro/services/api_service.dart';
+import 'package:svpro/services/app_permission_service.dart';
 import 'package:svpro/services/local_storage.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -21,17 +23,41 @@ class LoginScreenState extends State<LoginScreen> {
   bool isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    initLogin();
+  }
+
+  Future<void> initLogin() async {
+    await AppNavigator.showConfirmationDialog(
+      title: 'Bật thông báo',
+      content: 'Bật để nhận lịch học và nhắc nhở quan trọng.',
+      confirmText: 'Bật ngay',
+      confirmColor: Colors.blueAccent,
+      onConfirm: () async {
+        final granted = await NotificationPermissionService.requestNotificationPermission();
+        if (!granted) {
+          await AppNavigator.showConfirmationDialog(
+              title: '',
+              content: 'Bật lại thông báo hãy mở \'Cài đặt\' nhé!',
+              confirmText: 'OK',
+              cancelText: null,
+              onConfirm: () {}
+          );
+        }
+        await NotificationPermissionService.initFcmToken();
+        await LocalStorage.push();
+      },
+    );
+    await AppCore.checkForUpdate();
+  }
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        backgroundColor: Colors.blueAccent,
-        title: const Text(
-          'Đăng nhập',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        title: const Text('Đăng nhập'),
       ),
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -120,14 +146,14 @@ class LoginScreenState extends State<LoginScreen> {
                       right: 0,
                       child: Center(
                         child: Container(
-                          padding: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(3),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white,
-                            border: Border.all(color: Colors.blueAccent, width: 3),
+                            border: Border.all(color: Colors.blueAccent, width: 2),
                           ),
-                          child: SvgPicture.asset(
-                            'assets/icon/app_icon.svg',
+                          child: Image.asset(
+                            'assets/icon/app_icon.png',
                             height: 64,
                             width: 64,
                           ),
@@ -158,18 +184,23 @@ class LoginScreenState extends State<LoginScreen> {
     setState(() => isLoading = true);
 
     try {
-      final response = await ApiService.login(username, password);
-      var jsonData = jsonDecode(response.body);
+      final deviceInfo = await AppCore.getDeviceInfo();
+      final res = await ApiService.login(username, password, deviceInfo['deviceName']);
+      if (res.statusCode == 422) {
+        AppCore.handleValidationError(res.body);
+        return;
+      }
+      var jsonData = jsonDecode(res.body);
       if (jsonData['detail']['status']) {
         LocalStorage.auth_token = jsonData['detail']['data']['token'];
         await LocalStorage.push();
         AppNavigator.safeGo('/home');
-        AppNavigator.success('Đăng nhập thành công!');
+        AppNavigator.success(jsonData['detail']['message']);
       } else {
         AppNavigator.error(jsonData['detail']['message']);
       }
     } catch (e) {
-      print(e);
+      debugPrint("error: $e");
       AppNavigator.error('Không thể kết nối tới máy chủ');
     } finally {
       setState(() => isLoading = false);

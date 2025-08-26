@@ -1,20 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:svpro/app_theme.dart';
 import 'package:svpro/models/schedule.dart';
 import 'package:svpro/widgets/schedule/schedule_day_item.dart';
-
-
-Color getColorByDate(DateTime date) {
-  final now = DateTime.now();
-  final d = DateTime(now.year, now.month, now.day);
-  final target = DateTime(date.year, date.month, date.day);
-  final diff = target.difference(d).inDays;
-
-  if (diff < 0) return Colors.grey; // Past
-  if (diff == 0) return Color(0xffff891b); // Today
-  if (diff == 1) return Colors.purple; // Tomorrow
-  return  Colors.teal; // Future
-}
 
 class ScheduleDayView extends StatelessWidget {
   final DateTime date;
@@ -39,12 +27,12 @@ class ScheduleDayView extends StatelessWidget {
             children: [
               Text(
                 DateFormat('d').format(date),
-                style: TextStyle(fontSize: 22, color: getColorByDate(date)),
+                style: TextStyle(fontSize: 22, color: AppTheme.getColorByDate(date)),
               ),
               Text(
                 ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.weekday % 7],
                 style: TextStyle(
-                  fontSize: 16, color: getColorByDate(date)
+                  fontSize: 16, color: AppTheme.getColorByDate(date)
                 ),
               ),
             ],

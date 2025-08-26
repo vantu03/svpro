@@ -48,8 +48,16 @@
     <key>UIBackgroundModes</key>
     <array>
         <string>remote-notification</string>
+        <string>location</string>
     </array>
     <key>NSUserNotificationAlertStyle</key>
     <string>alert</string>
+
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Ứng dụng cần quyền truy cập vị trí để hiển thị bản đồ và xác định vị trí của bạn.</string>
+
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Ứng dụng cần truy cập vị trí ngay cả khi chạy nền để theo dõi và cập nhật đường đi.</string>
+
 </dict>
 </plist>

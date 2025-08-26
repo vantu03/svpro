@@ -14,14 +14,19 @@ class WebSocketClient {
   bool manuallyClosed = false;
   Timer? pingTimer;
 
+  Map<String, FutureOr<void> Function()> subscriptions = {};
+
   Function()? onLogout;
   Function()? onConnected;
   Function()? onDisconnected;
   Function(dynamic error)? onError;
-  Function(dynamic data)? onInsertNotification;
-  Function()? onLoadNotification;
-  Function()? onLoadHome;
+  Function(dynamic data)? onNotificationInserted;
   Function(dynamic data)? onReadNotification;
+  Function(dynamic data)? onOrderRemoved;
+  Function(dynamic data)? onOrderStatusChanged;
+  Function(dynamic data)? onOrderInserted;
+
+
 
   WebSocketClient() {
     controller = WebSocketController(client: this);
@@ -31,13 +36,13 @@ class WebSocketClient {
 
     disconnect();
 
-    print('[WS] Connecting to $url ...');
+    debugPrint("Websocket: Connecting to $url ...");
     manuallyClosed = false;
 
     try {
       channel = WebSocketChannel.connect(Uri.parse(url));
     } catch (e) {
-      print('[WS] Connection error: $e');
+      debugPrint("error: $e");
       reconnect(url);
       return;
     }
@@ -52,18 +57,18 @@ class WebSocketClient {
           final msg = jsonDecode(message);
           controller?.onMessage(msg);
         } catch (e) {
-          print('[WS] JSON decode error: $e - $message');
+          debugPrint("error: $e - $message");
         }
       },
-      onError: (error) {
-        print('[WS] Connection error: $error');
+      onError: (e) {
+        debugPrint("error: $e");
         isConnected = false;
         channel = null;
-        onError?.call(error);
+        onError?.call(e);
         reconnect(url);
       },
       onDone: () {
-        print('[WS] Connection closed.');
+        debugPrint("Websocket: Connection closed.");
         isConnected = false;
         channel = null;
         onDisconnected?.call();
@@ -76,11 +81,11 @@ class WebSocketClient {
 
   void reconnect(String url) async {
     if (manuallyClosed) {
-      print('[WS] Manual disconnect. No reconnect.');
+      debugPrint("Websocket: Manual disconnect. No reconnect.");
       return;
     }
 
-    print('[WS] Reconnecting in 3s...');
+    debugPrint("Websocket: Reconnecting in 3s...");
     await Future.delayed(const Duration(seconds: 3));
     connect(url);
   }
@@ -91,9 +96,9 @@ class WebSocketClient {
       if (isConnected) {
         try {
           send('ping', {});
-          print('[WS] → ping');
+          debugPrint("Websocket: → ping");
         } catch (e) {
-          print('[WS] Ping error: $e');
+          debugPrint("error: $e");
         }
       }
     });
@@ -101,7 +106,7 @@ class WebSocketClient {
 
   void disconnect() {
     if (isConnected) {
-      print('disconnect........');
+      debugPrint("Websocket: disconnect........");
       manuallyClosed = true;
       try {
         channel?.sink.close();
@@ -115,7 +120,7 @@ class WebSocketClient {
 
   void send(String cmd, Map<String, dynamic> payload) {
     if (!isConnected || channel == null) {
-      print('[WS] Not connected. Cannot send.');
+      debugPrint("Websocket: Not connected. Cannot send.");
       return;
     }
 
@@ -123,7 +128,35 @@ class WebSocketClient {
       final msg = jsonEncode({'cmd': cmd, 'payload': payload});
       channel!.sink.add(msg);
     } catch (e) {
-      print('[WS] Send error: $e');
+      debugPrint("error: $e");
+    }
+  }
+
+  String addSubscription(FutureOr<void> Function() sub) {
+    final id = UniqueKey().toString();
+    subscriptions[id] = sub;
+
+    // gọi ngay
+    final result = sub();
+    if (result is Future) {
+      result.catchError((e) {
+        print("Lỗi khi chạy subscription: $e");
+      });
+    }
+
+    return id;
+  }
+
+  void removeSubscription(String id) {
+    subscriptions.remove(id);
+  }
+
+  Future<void> reSubscribeAll() async {
+    for (var sub in subscriptions.values) {
+      final result = sub();
+      if (result is Future) {
+        await result;
+      }
     }
   }
 }

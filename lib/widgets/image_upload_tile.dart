@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:svpro/app_navigator.dart';
+import 'package:svpro/app_core.dart';
 import 'package:svpro/services/api_service.dart';
 
 class ImageUploadTile extends StatefulWidget {
@@ -37,8 +38,12 @@ class ImageUploadTileState extends State<ImageUploadTile> {
     });
 
     try {
-      final response = await ApiService.uploadImage(picked, widget.fileType);
-      final jsonData = jsonDecode(response.body);
+      final res = await ApiService.uploadImage(picked, widget.fileType);
+      if (res.statusCode == 422) {
+        AppCore.handleValidationError(res.body);
+        return;
+      }
+      final jsonData = jsonDecode(res.body);
       if (jsonData['detail']['status'] == true) {
         final data = jsonData['detail']['data'];
         final url = data['url'];
@@ -54,7 +59,7 @@ class ImageUploadTileState extends State<ImageUploadTile> {
         AppNavigator.error('Upload thất bại: ${jsonData['detail']['message']}');
       }
     } catch (e) {
-      print(e);
+      debugPrint("error: $e");
       AppNavigator.error('Không thể kết nối tới máy chủ');
     } finally {
       if (mounted) setState(() => uploading = false);

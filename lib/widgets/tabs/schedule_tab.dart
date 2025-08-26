@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:svpro/app_core.dart';
 import 'package:svpro/app_navigator.dart';
 import 'package:svpro/models/schedule.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_scheduler.dart';
 import 'package:svpro/services/notification_service.dart';
+import 'package:svpro/widgets/rotating_widget.dart';
 import 'package:svpro/widgets/schedule/schedule_display.dart';
 import 'package:svpro/widgets/tab_item.dart';
 
@@ -69,25 +71,16 @@ class ScheduleTabState extends State<ScheduleTab> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.blueAccent,
+        title: Text(widget.label),
         actions: [
-          if (isLoading) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                ),
-              ),
-            ),
-          ] else ...[
-            IconButton(
-              icon: const Icon(Icons.sync),
-              tooltip: 'Tải lại lịch học',
-              onPressed: () async {
+          IconButton(
+            icon: isLoading ? RotatingWidget(
+              isRotating: true,
+              child: Icon(Icons.sync),
+            ): Icon(Icons.sync),
+            tooltip: 'Tải lại lịch học',
+            onPressed: () async {
+              if (!isLoading) {
                 setState(() {
                   isLoading = true;
                 });
@@ -95,15 +88,13 @@ class ScheduleTabState extends State<ScheduleTab> {
                 setState(() {
                   isLoading = false;
                 });
-              },
-            ),
-          ],
+              }
+            },
+          ),
         ],
 
         centerTitle: false,
       ),
-
-      backgroundColor: Colors.white,
       body: Row(
         children: [
           if (LocalStorage.schedule.isEmpty) ...[
@@ -171,7 +162,7 @@ class ScheduleTabState extends State<ScheduleTab> {
         AppNavigator.error(jsonData['detail']['message']);
       }
     } catch (e){
-      print(e);
+      debugPrint("error: $e");
     }
   }
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:svpro/app_core.dart';
 import 'package:svpro/app_navigator.dart';
 import 'package:svpro/models/sender.dart';
 import 'package:svpro/services/api_service.dart';
@@ -30,15 +31,11 @@ class FeatureSenderState extends State<FeatureSender> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.label,
-            style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.blueAccent,
+        title: Text(widget.label),
         centerTitle: false,
       ),
-      backgroundColor: Colors.white,
       body: FutureBuilder(
-        future: ApiService.getSenderInfo(),
+        future: ApiService.getSender(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -48,11 +45,10 @@ class FeatureSenderState extends State<FeatureSender> {
             try {
               var jsonData = jsonDecode(snapshot.data!.body);
               if (jsonData['detail']['status']) {
-                final data = jsonData['detail']['data'];
-                final sender = data['sender'];
+                final sender = jsonData['detail']['data'];
 
                 if (sender != null) {
-                  return  SenderInfoPanel(sender: SenderModel.fromJson(sender),);
+                  return SenderInfoPanel(sender: SenderModel.fromJson(sender),);
                 } else {
                   return const SenderRegisterForm();
                 }
@@ -60,7 +56,7 @@ class FeatureSenderState extends State<FeatureSender> {
                 AppNavigator.error(jsonData['detail']['message']);
               }
             } catch (e) {
-              print(e);
+              debugPrint("error: $e");
             }
             return const Center(child: Text('Không thể tải dữ liệu.'));
           }

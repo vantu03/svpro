@@ -19,6 +19,10 @@ class AppTextField extends StatefulWidget {
   final bool enabled;
   final bool readOnly;
   final VoidCallback? onTap;
+  final Widget? suffixIcon;
+  final num? minValue;
+  final num? maxValue;
+
 
   const AppTextField({
     super.key,
@@ -39,6 +43,9 @@ class AppTextField extends StatefulWidget {
     this.enabled = true,
     this.readOnly = false,
     this.onTap,
+    this.suffixIcon,
+    this.minValue,
+    this.maxValue,
   });
 
   @override
@@ -91,6 +98,7 @@ class AppTextFieldState extends State<AppTextField> {
           hintText: widget.hintText,
           border: const OutlineInputBorder(),
           counterText: widget.counterText,
+          suffixIcon: widget.suffixIcon,
         ),
         validator: (value) {
           final v = value?.trim() ?? '';
@@ -102,6 +110,18 @@ class AppTextFieldState extends State<AppTextField> {
           }
           if (widget.maxLength != null && v.length > widget.maxLength!) {
             return 'Tối đa ${widget.maxLength} ký tự';
+          }
+          if (widget.minValue != null || widget.maxValue != null) {
+            final num? number = num.tryParse(v.replaceAll(",", ""));
+            if (number == null) {
+              return 'Giá trị phải là số';
+            }
+            if (widget.minValue != null && number < widget.minValue!) {
+              return 'Tối thiểu là ${widget.minValue}';
+            }
+            if (widget.maxValue != null && number > widget.maxValue!) {
+              return 'Tối đa là ${widget.maxValue}';
+            }
           }
           if (widget.customValidator != null) {
             return widget.customValidator!(v);

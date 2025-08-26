@@ -1,8 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:svpro/app_navigator.dart';
-import 'package:svpro/config.dart';
-import 'package:svpro/services/app_permission_service.dart';
+import 'package:svpro/app_core.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_scheduler.dart';
 import 'package:svpro/widgets/tabs/home_tab.dart';
@@ -62,7 +61,7 @@ class HomeScreenState extends State<HomeScreen> {
         AppNavigator.safeGo('/login');
       } else {
 
-        wsService.connect(Config.ws_url);
+        wsService.connect(AppCore.ws_url);
         //Đăng ký các hàm
         wsService.onLogout = () async {
           LocalStorage.auth_token = '';
@@ -71,37 +70,22 @@ class HomeScreenState extends State<HomeScreen> {
           await NotificationScheduler.setupAllLearningNotifications();
           AppNavigator.safeGo('/login');
         };
-
-        if (!LocalStorage.notificationsAsked) {
-          await AppNavigator.showConfirmationDialog(
-            title: 'Bật thông báo',
-            content: 'Bật để nhận lịch học và nhắc nhở quan trọng.',
-            confirmText: 'Bật ngay',
-            confirmColor: Colors.blueAccent,
-            onConfirm: () async {
-
-              LocalStorage.notificationsAsked = true;
-              await LocalStorage.push();
-
-              final granted = await NotificationPermissionService.requestNotificationPermission();
-              if (!granted) {
-                await AppNavigator.showConfirmationDialog(
-                    title: '',
-                    content: 'Bật lại thông báo hãy mở \'Cài đặt\' nhé!',
-                    confirmText: 'OK',
-                    cancelText: null,
-                    onConfirm: () {});
-              }
-            },
-          );
-        }
       }
     });
+
+    AppNavigator.flushPending();
+    initHome();
+  }
+
+
+  Future<void> initHome() async {
+    await AppCore.checkForUpdate();
   }
 
   @override
   void dispose() {
     super.dispose();
+    //wsService.disconnect();
   }
 
   void switchToTab(int index) {
@@ -132,12 +116,9 @@ class HomeScreenState extends State<HomeScreen> {
         index: currentIndex,
         children: tabs.cast<Widget>(),
       ),
-      backgroundColor: Colors.white,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         onTap: switchToTab,
-        selectedItemColor: Colors.blueAccent,
-        unselectedItemColor: Colors.grey,
         selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
         type: BottomNavigationBarType.fixed,
         items: tabs.map((tab) {

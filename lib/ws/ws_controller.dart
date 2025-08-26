@@ -1,4 +1,5 @@
 
+import 'package:flutter/material.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/ws/ws_client.dart';
 
@@ -16,9 +17,8 @@ class WebSocketController {
         client.send('auth', {'token': LocalStorage.auth_token});
         break;
       case 'auth_done':
-        await client.onLoadHome?.call();
-        await client.onLoadNotification?.call();
-        print('auth done!');
+        client.reSubscribeAll();
+        debugPrint('info: auth done!');
         break;
       case 'logout':
         await client.onLogout?.call();
@@ -27,10 +27,19 @@ class WebSocketController {
         await client.onLogout?.call();
         break;
       case 'notification':
-        await client.onInsertNotification?.call(payload);
+        await client.onNotificationInserted?.call(payload);
         break;
       case 'notification_read':
         await client.onReadNotification?.call(payload);
+        break;
+      case 'order_removed':
+        await client.onOrderRemoved?.call(payload);
+        break;
+      case 'order_status_changed':
+        client.onOrderStatusChanged?.call(payload);
+        break;
+      case 'order_inserted':
+        client.onOrderInserted?.call(payload);
         break;
     }
   }

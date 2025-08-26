@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:svpro/app_theme.dart';
 import 'package:svpro/screens/home_screen.dart';
 import 'package:svpro/screens/login_screen.dart';
 import 'package:svpro/screens/settings_screen.dart';
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
 
+      theme: AppTheme.lightBlueTheme,
       locale: const Locale('vi'),
       supportedLocales: const [
         Locale('vi'),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:svpro/app_core.dart';
 import 'package:svpro/app_navigator.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/widgets/feature_item.dart';
@@ -32,13 +33,9 @@ class FeatureShipperState extends State<FeatureShipper> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.label,
-            style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.blueAccent,
+        title: Text(widget.label),
         centerTitle: false,
       ),
-      backgroundColor: Colors.white,
       body: FutureBuilder(
         future: ApiService.getShipperInfo(),
         builder: (context, snapshot) {
@@ -56,7 +53,7 @@ class FeatureShipperState extends State<FeatureShipper> {
 
                 if (shipper != null) {
                   // Đã được duyệt làm shipper
-                  return ApprovedApplicationWidget(application: application);
+                  return ApprovedApplicationWidget();
                 } else if (application != null) {
                   final status = application['status'];
                   if (status == 'pending') {
@@ -108,7 +105,7 @@ class FeatureShipperState extends State<FeatureShipper> {
                 AppNavigator.error(jsonData['detail']['message']);
               }
             } catch (e) {
-              print(e);
+              debugPrint("error: $e");
             }
             return const Center(child: Text('Không thể tải dữ liệu.'));
           }

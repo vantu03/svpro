@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:svpro/app_navigator.dart';
+import 'package:svpro/app_core.dart';
 import 'package:svpro/services/api_service.dart';
 import 'package:svpro/widgets/app_dropdown_field.dart';
 import 'package:svpro/widgets/app_text_field.dart';
@@ -43,7 +44,7 @@ class _ShipperRegisterFormState extends State<ShipperRegisterForm> {
 
     AppNavigator.showLoadingDialog();
     try {
-      final response = await ApiService.registerShipper(
+      final res = await ApiService.registerShipper(
         nameController.text.trim(),
         phoneController.text.trim(),
         identityController.text.trim(),
@@ -56,8 +57,12 @@ class _ShipperRegisterFormState extends State<ShipperRegisterForm> {
         idFrontUrl!,
         idBackUrl!,
       );
+      if (res.statusCode == 422) {
+        AppCore.handleValidationError(res.body);
+        return;
+      }
 
-      var jsonData = jsonDecode(response.body);
+      var jsonData = jsonDecode(res.body);
       if (jsonData['detail']['status']) {
         AppNavigator.success(jsonData['detail']['message']);
       } else {
@@ -103,6 +108,8 @@ class _ShipperRegisterFormState extends State<ShipperRegisterForm> {
                   AppTextField(
                     controller: nameController,
                     label: 'Họ và tên',
+                    maxLength: 50,
+                    minLength: 5,
                   ),
 
                   AppTextField(
@@ -110,24 +117,22 @@ class _ShipperRegisterFormState extends State<ShipperRegisterForm> {
                     label: 'Số điện thoại',
                     keyboardType: TextInputType.phone,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    minLength: 9,
-                    maxLength: 11,
-                    customValidator: (v) {
-                      if (!RegExp(r'^\d{9,11}$').hasMatch(v!)) {
-                        return 'Số điện thoại không hợp lệ';
-                      }
-                      return null;
-                    },
+                    minLength: 10,
+                    maxLength: 12,
                   ),
 
                   AppTextField(
                     controller: identityController,
                     label: 'Số CMND/CCCD',
+                    minLength: 9,
+                    maxLength: 12,
                   ),
 
                   AppTextField(
                     controller: addressController,
                     label: 'Địa chỉ',
+                    minLength: 5,
+                    maxLength: 255,
                   ),
 
                   const SizedBox(height: 12),
@@ -148,6 +153,8 @@ class _ShipperRegisterFormState extends State<ShipperRegisterForm> {
                   AppTextField(
                     controller: licensePlateController,
                     label: 'Biển số xe',
+                    minLength: 5,
+                    maxLength: 20,
                   ),
 
                   const SizedBox(height: 12),

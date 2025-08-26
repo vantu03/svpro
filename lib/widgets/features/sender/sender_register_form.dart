@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:svpro/app_navigator.dart';
+import 'package:svpro/app_core.dart';
 import 'package:svpro/services/api_service.dart';
+import 'package:svpro/services/location_service.dart';
 import 'package:svpro/widgets/app_text_field.dart';
 
 class SenderRegisterForm extends StatefulWidget {
@@ -25,13 +27,17 @@ class SenderRegisterFormState extends State<SenderRegisterForm> {
 
     AppNavigator.showLoadingDialog();
     try {
-      final response = await ApiService.registerSender(
+      final res = await ApiService.registerSender(
         nameController.text.trim(),
         phoneController.text.trim(),
         addressController.text.trim(),
       );
 
-      var jsonData = jsonDecode(response.body);
+      if (res.statusCode == 422) {
+        AppCore.handleValidationError(res.body);
+        return;
+      }
+      var jsonData = jsonDecode(res.body);
       if (jsonData['detail']['status']) {
         AppNavigator.success(jsonData['detail']['message']);
       } else {
@@ -42,6 +48,21 @@ class SenderRegisterFormState extends State<SenderRegisterForm> {
       AppNavigator.error('Không thể kết nối tới máy chủ');
     } finally {
       AppNavigator.hideDialog();
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initForm();
+  }
+
+  Future<void> initForm() async {
+    final address = await LocationService.getCurrentAddress();
+    if (address != null && mounted) {
+      setState(() {
+        addressController.text = address;
+      });
     }
   }
 
@@ -77,6 +98,8 @@ class SenderRegisterFormState extends State<SenderRegisterForm> {
                   AppTextField(
                     controller: nameController,
                     label: 'Họ và tên / Tên shop',
+                    minLength: 5,
+                    maxLength: 50,
                   ),
 
                   AppTextField(
@@ -84,19 +107,31 @@ class SenderRegisterFormState extends State<SenderRegisterForm> {
                     label: 'Số điện thoại',
                     keyboardType: TextInputType.phone,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    minLength: 9,
-                    maxLength: 11,
-                    customValidator: (v) {
-                      if (!RegExp(r'^\d{9,11}$').hasMatch(v!)) {
-                        return 'Số điện thoại không hợp lệ';
-                      }
-                      return null;
-                    },
+                    minLength: 10,
+                    maxLength: 12,
                   ),
                   AppTextField(
                     maxLength: 255,
                     controller: addressController,
                     label: 'Địa chỉ mặc định / Địa chỉ ship tới nhận',
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.my_location, color: Colors.blue),
+                      tooltip: "Lấy địa chỉ hiện tại",
+                      onPressed: () async {
+                        AppNavigator.showLoadingDialog(message: "Đang lấy địa chỉ...");
+                        final address = await LocationService.getCurrentAddress();
+                        AppNavigator.hideDialog();
+
+                        if (address != null) {
+                          setState(() {
+                            addressController.text = address;
+                          });
+                          AppNavigator.info("Đã lấy địa chỉ thành công!");
+                        } else {
+                          AppNavigator.warning("Không thể lấy địa chỉ hiện tại");
+                        }
+                      },
+                    ),
                   ),
 
                   const SizedBox(height: 24),
@@ -104,10 +139,8 @@ class SenderRegisterFormState extends State<SenderRegisterForm> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      icon: const Icon(Icons.check_circle_outline,
-                          color: Colors.white),
-                      label: const Text('Đăng ký',
-                          style: TextStyle(color: Colors.white)),
+                      icon: const Icon(Icons.check_circle_outline,),
+                      label: const Text('Đăng ký'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         padding: const EdgeInsets.symmetric(vertical: 14),

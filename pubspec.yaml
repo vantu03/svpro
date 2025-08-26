@@ -2,7 +2,7 @@ name: svpro
 description: "Ứng dụng tiện ích cho sinh viên."
 publish_to: 'none'
 
-version: 1.0.5+1
+version: 1.0.8+1
 
 environment:
   sdk: ^3.8.1
@@ -39,6 +39,9 @@ dependencies:
   http_parser: ^4.1.2
   url_launcher: ^6.3.2
   animate_do: ^4.2.0
+  geolocator: ^14.0.2
+  geocoding: ^4.0.0
+  package_info_plus: ^8.3.1
 
 dev_dependencies:
   flutter_test:
@@ -56,3 +59,5 @@ flutter_icons:
   android: true
   ios: true
   image_path: "assets/icon/app_icon.png"
+  image_path_android: "assets/icon/app_icon.png"
+  image_path_ios: "assets/icon/app_icon_fill.png"

@@ -44,13 +44,20 @@ class HomeTabState extends State<HomeTab> {
 
   List<String> banners = [];
   bool isLoading = true;
+  String? subId;
 
   @override
   void initState() {
     super.initState();
-    wsService.onLoadHome = () async {
-      await handleRefresh();
-    };
+    subId = wsService.addSubscription(handleRefresh);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    if (subId != null) {
+      wsService.removeSubscription(subId!);
+    }
   }
 
   Future<void> handleRefresh() async {
@@ -69,7 +76,7 @@ class HomeTabState extends State<HomeTab> {
         });
       }
     } catch (e) {
-      print(e);
+      debugPrint("error: $e");
     }
   }
 
@@ -93,7 +100,7 @@ class HomeTabState extends State<HomeTab> {
       setState(() {
         isLoading = false;
       });
-      print(e);
+      debugPrint("error: $e");
     }
   }
 
@@ -101,12 +108,9 @@ class HomeTabState extends State<HomeTab> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.label,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.blueAccent,
+        title: Text(widget.label),
         centerTitle: false,
       ),
-      backgroundColor: Colors.white,
       body: RefreshIndicator(
         onRefresh: handleRefresh,
         child: SingleChildScrollView(

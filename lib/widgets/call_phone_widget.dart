@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:svpro/config.dart';
+import 'package:svpro/app_core.dart';
 
 class CallPhoneWidget extends StatelessWidget {
   final String phoneNumber;
@@ -13,7 +13,7 @@ class CallPhoneWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Config.callPhone(phoneNumber),
+      onTap: () => AppCore.callPhone(phoneNumber),
       borderRadius: BorderRadius.circular(8),
       child: Row(
         mainAxisSize: MainAxisSize.min,
