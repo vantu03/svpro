@@ -180,7 +180,7 @@ class OrderPendingItemWidgetState extends State<OrderPendingItemWidget> {
                   ),
                 ),
                 Text(
-                  timeago.format(DateTime.parse(order.createAt), locale: 'vi'),
+                  timeago.format(DateTime.parse(order.createdAt), locale: 'vi'),
                   style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ],

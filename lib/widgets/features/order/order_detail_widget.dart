@@ -78,7 +78,7 @@ class OrderDetailWidgetState extends State<OrderDetailWidget> {
 
             // Thời gian tạo
             Text(
-              'Tạo: ${timeago.format(DateTime.parse(widget.order.createAt), locale: 'vi')}',
+              'Tạo: ${timeago.format(DateTime.parse(widget.order.createdAt), locale: 'vi')}',
               style: const TextStyle(color: Colors.grey),
             ),
             const Divider(height: 24),

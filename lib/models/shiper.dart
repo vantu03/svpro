@@ -23,8 +23,8 @@ class ShipperModel {
       fullName: json['full_name'],
       phoneNumber: json['phone_number'],
       avatarUrl: json['avatar_url'],
-      createdAt: json['create_at'],
-      updatedAt: json['update_at'],
+      createdAt: json['created_at'],
+      updatedAt: json['updated_at'],
       isActive: json['is_active'],
     );
   }

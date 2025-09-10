@@ -8,4 +8,5 @@ abstract class TabItem {
   IconData get icon;
 
   void onTab();
+
 }

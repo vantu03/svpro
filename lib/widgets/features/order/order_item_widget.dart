@@ -88,7 +88,7 @@ class OrderItemWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    timeago.format(DateTime.parse(order.createAt), locale: 'vi'),
+                    timeago.format(DateTime.parse(order.createdAt), locale: 'vi'),
                     style: const TextStyle(
                       fontSize: 12,
                       color: Colors.grey,

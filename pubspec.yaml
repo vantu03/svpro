@@ -2,7 +2,7 @@ name: svpro
 description: "Ứng dụng tiện ích cho sinh viên."
 publish_to: 'none'
 
-version: 1.0.8+1
+version: 1.0.8+2
 
 environment:
   sdk: ^3.8.1

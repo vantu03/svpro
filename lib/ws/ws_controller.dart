@@ -32,6 +32,9 @@ class WebSocketController {
       case 'notification_read':
         await client.onReadNotification?.call(payload);
         break;
+      case 'notification_read_all':
+        await client.onReadNotificationAll?.call();
+        break;
       case 'order_removed':
         await client.onOrderRemoved?.call(payload);
         break;

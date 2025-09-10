@@ -17,7 +17,7 @@ class AppWebView extends StatefulWidget {
   final String? onSuccessUrlPrefix; // URL bắt đầu bằng => success
   final String? onCustomScheme;     // Scheme đặc biệt => success
   final String? allowedHostSuffix;  // Giới hạn domain
-  final VoidCallback? onSuccess;    // Callback khi thành công
+  final void Function(String url)? onSuccess;    // Callback khi thành công
 
   @override
   State<AppWebView> createState() => AppWebViewState();
@@ -40,16 +40,15 @@ class AppWebViewState extends State<AppWebView> {
             debugPrint('[WEB] → ${req.url}');
 
             // Thành công qua URL prefix
-            if (widget.onSuccessUrlPrefix != null &&
-                req.url.startsWith(widget.onSuccessUrlPrefix!)) {
-              widget.onSuccess?.call();
+            debugPrint('[onSuccessUrlPrefix] ${widget.onSuccessUrlPrefix} | ${widget.onSuccessUrlPrefix != null && req.url.startsWith(widget.onSuccessUrlPrefix!)}');
+            if (widget.onSuccessUrlPrefix != null && req.url.startsWith(widget.onSuccessUrlPrefix!)) {
+              widget.onSuccess?.call(req.url);
               return NavigationDecision.prevent;
             }
 
             // Thành công qua custom scheme
-            if (widget.onCustomScheme != null &&
-                req.url.startsWith(widget.onCustomScheme!)) {
-              widget.onSuccess?.call();
+            if (widget.onCustomScheme != null && req.url.startsWith(widget.onCustomScheme!)) {
+              widget.onSuccess?.call(req.url);
               return NavigationDecision.prevent;
             }
 

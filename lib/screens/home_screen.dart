@@ -1,7 +1,10 @@
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:svpro/app_navigator.dart';
 import 'package:svpro/app_core.dart';
+import 'package:svpro/services/api_service.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_scheduler.dart';
 import 'package:svpro/widgets/tabs/home_tab.dart';
@@ -10,6 +13,7 @@ import 'package:svpro/widgets/tabs/notification_tab.dart';
 import 'package:svpro/widgets/tabs/menu_tab.dart';
 import 'package:svpro/widgets/tab_item.dart';
 import 'package:svpro/ws/ws_client.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
 
@@ -77,9 +81,56 @@ class HomeScreenState extends State<HomeScreen> {
     initHome();
   }
 
-
   Future<void> initHome() async {
-    await AppCore.checkForUpdate();
+    await checkForUpdate();
+  }
+
+ Future<void> checkForUpdate() async {
+    try {
+      final res = await ApiService.checkUpdate();
+
+      if (res.statusCode == 422) {
+        AppCore.handleValidationError(res.body);
+        return;
+      }
+
+      final jsonData = jsonDecode(res.body);
+      if (jsonData['detail']['status'] == true) {
+        final data = jsonData['detail']['data'];
+
+
+
+        if (data['update']) {
+          if (data['force']) {
+            AppNavigator.showForcedActionDialog(
+              title: data['title'],
+              content: data['content'],
+              onConfirm: () async {
+                final url = Uri.parse(data['url']);
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                }
+              },
+              confirmText: data['confirm_text'],
+            );
+          } else {
+            AppNavigator.showConfirmationDialog(
+              title: data['title'],
+              content: data['content'],
+              confirmText: data['confirm_text'],
+              onConfirm: () async {
+                final url = Uri.parse(data['url']);
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                }
+              },
+            );
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("error: $e");
+    }
   }
 
   @override

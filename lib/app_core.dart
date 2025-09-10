@@ -7,9 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:svpro/services/api_service.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import 'app_navigator.dart';
 
 
@@ -125,90 +123,7 @@ class AppCore {
     }
   }
 
-  static bool isOutdated(String current, String latest) {
-    final c = current.split('.').map(int.parse).toList();
-    final l = latest.split('.').map(int.parse).toList();
 
-    for (int i = 0; i < l.length; i++) {
-      if (i >= c.length) return true;
-      if (c[i] < l[i]) return true;
-      if (c[i] > l[i]) return false;
-    }
-    return false;
-  }
-
-  static Future<void> checkForUpdate() async {
-    if (packageInfo == null) {
-      return;
-    }
-    try {
-      final current = packageInfo!.version;
-      print('current version: '+ current);
-      final res = await ApiService.getUpdateInfo();
-
-      if (res.statusCode == 422) {
-        AppCore.handleValidationError(res.body);
-        return;
-      }
-
-      final jsonData = jsonDecode(res.body);
-      if (jsonData['detail']?['status'] == true) {
-        final data = jsonData['detail']['data'];
-
-        // chọn url phù hợp platform
-        final urls = Map<String, dynamic>.from(data['urls'] ?? {});
-        String? updateUrl;
-        if (Platform.isAndroid) {
-          updateUrl = urls['android'];
-        } else if (Platform.isIOS) {
-          updateUrl = urls['ios'];
-        } else if (Platform.isWindows) {
-          updateUrl = urls['windows'];
-        } else if (Platform.isMacOS) {
-          updateUrl = urls['macos'];
-        } else if (Platform.isLinux) {
-          updateUrl = urls['linux'];
-        } else {
-          updateUrl = urls['web'];
-        }
-
-        if (updateUrl == null || updateUrl.isEmpty) {
-          debugPrint("error: Không tìm thấy URL cập nhật cho platform này");
-          return;
-        }
-
-        if (isOutdated(current, data['latest_version'])) {
-          if (data['force']) {
-            AppNavigator.showForcedActionDialog(
-              title: data['title'],
-              content: data['content'],
-              onConfirm: () async {
-                final url = Uri.parse(updateUrl!);
-                if (await canLaunchUrl(url)) {
-                  await launchUrl(url, mode: LaunchMode.externalApplication);
-                }
-              },
-              confirmText: data['confirm_text'],
-            );
-          } else {
-            AppNavigator.showConfirmationDialog(
-              title: data['title'],
-              content: data['content'],
-              confirmText: data['confirm_text'],
-              onConfirm: () async {
-                final url = Uri.parse(updateUrl!);
-                if (await canLaunchUrl(url)) {
-                  await launchUrl(url, mode: LaunchMode.externalApplication);
-                }
-              },
-            );
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint("error: $e");
-    }
-  }
 
   static Future<Map<String, dynamic>> getDeviceInfo() async {
     final packageInfo = await PackageInfo.fromPlatform();
@@ -255,6 +170,8 @@ class AppCore {
     }
 
     return {
+      "appName": packageInfo.appName,
+      "packageName": packageInfo.packageName,
       "appVersion": packageInfo.version,
       "buildNumber": packageInfo.buildNumber,
       "osName": osName,

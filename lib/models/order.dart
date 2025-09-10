@@ -20,8 +20,8 @@ class OrderModel {
   final int? shipperId;
   final ShipperModel? shipper;
   String status;
-  final String createAt;
-  final String updateAt;
+  final String createdAt;
+  final String updatedAt;
 
   OrderModel({
     required this.id,
@@ -43,8 +43,8 @@ class OrderModel {
     this.shipperId,
     this.shipper,
     required this.status,
-    required this.createAt,
-    required this.updateAt,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -68,8 +68,8 @@ class OrderModel {
       shipperId: json['shipper_id'],
       shipper: json['shipper'] != null ? ShipperModel.fromJson(json['shipper']) : null,
       status: json['status'] ?? '',
-      createAt: json['create_at'] ?? '',
-      updateAt: json['update_at'] ?? '',
+      createdAt: json['created_at'] ?? '',
+      updatedAt: json['updated_at'] ?? '',
     );
   }
 }

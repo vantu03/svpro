@@ -22,11 +22,10 @@ class WebSocketClient {
   Function(dynamic error)? onError;
   Function(dynamic data)? onNotificationInserted;
   Function(dynamic data)? onReadNotification;
+  Function()? onReadNotificationAll;
   Function(dynamic data)? onOrderRemoved;
   Function(dynamic data)? onOrderStatusChanged;
   Function(dynamic data)? onOrderInserted;
-
-
 
   WebSocketClient() {
     controller = WebSocketController(client: this);
@@ -140,7 +139,7 @@ class WebSocketClient {
     final result = sub();
     if (result is Future) {
       result.catchError((e) {
-        print("Lỗi khi chạy subscription: $e");
+        debugPrint("error: $e");
       });
     }
 

@@ -9,7 +9,9 @@ class ApiService {
 
   static Map<String, String> get authHeaders => {
     'Authorization': 'Bearer ${LocalStorage.auth_token}',
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'X-App-Version': AppCore.packageInfo?.version ?? 'unknown',
+    'X-App-Build': AppCore.packageInfo?.buildNumber ?? '0',
   };
 
   static Future<http.Response> login(String username, String password, deviceInfo) async {
@@ -54,10 +56,20 @@ class ApiService {
     );
   }
 
-  static Future<http.Response> getUpdateInfo() async {
-    return await http.get(
-      Uri.parse('${AppCore.request_url}/common/update/version'),
+  static Future<http.Response> checkUpdate() async {
+    final info = await AppCore.getDeviceInfo();
+
+    return await http.post(
+      Uri.parse('${AppCore.request_url}/application/update/version'),
       headers: authHeaders,
+      body: jsonEncode({
+        'app_version': info['appVersion'],
+        'build_number': info['buildNumber'],
+        'os_name': info['osName'],
+        'os_version': info['osVersion'],
+        'device_name': info['deviceName'],
+        'device_model': info['deviceModel'],
+      }),
     );
   }
 
@@ -160,6 +172,15 @@ class ApiService {
       body: jsonEncode({'id': notificationId}),
     );
   }
+
+  static Future<http.Response> markAllNotificationsRead() async {
+    final uri = Uri.parse('${AppCore.request_url}/notification/read/all');
+    return await http.post(
+      uri,
+      headers: authHeaders,
+    );
+  }
+
   static Future<http.Response> getUnreadCount() async {
     final uri = Uri.parse('${AppCore.request_url}/notification/unread-count');
     return await http.get(uri, headers: authHeaders);
@@ -289,6 +310,14 @@ class ApiService {
       uri,
       headers: authHeaders,
       body: jsonEncode({}),
+    );
+  }
+
+  static Future<http.Response> getLoginConfig() async {
+    final uri = Uri.parse('${AppCore.request_url}/auth/login/config');
+    return await http.get(
+      uri,
+      headers: authHeaders,
     );
   }
 

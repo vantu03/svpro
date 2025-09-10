@@ -88,6 +88,15 @@ class NotificationTabState extends State<NotificationTab> {
       }
     };
 
+    wsService.onReadNotificationAll = () {
+      setState(() {
+          for (var n in notifications) {
+            n.isRead = true;
+          }
+        });
+        NotificationService.instance.setBadgeFromServer(0);
+        widget.onBadgeChanged?.call(widget.id, 0);
+    };
 
     timer = Timer.periodic(const Duration(minutes: 1), (timer) {
       if (mounted) setState(() {});
@@ -190,6 +199,68 @@ class NotificationTabState extends State<NotificationTab> {
       appBar: AppBar(
         title: Text(widget.label),
         centerTitle: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                builder: (BuildContext context) {
+                  return DraggableScrollableSheet(
+                    expand: false,
+                    initialChildSize: 0.25,
+                    minChildSize: 0.25,
+                    maxChildSize: 0.9,
+                    builder: (context, scrollController) {
+                      return Column(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 5,
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[400],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          Expanded(
+                            child: ListView(
+                              controller: scrollController,
+                              children: [
+                                ListTile(
+                                  leading: const Icon(Icons.mark_email_read_rounded),
+                                  title: const Text("Đánh dấu tất cả là đã đọc"),
+                                  onTap: () async {
+                                    setState(() {
+                                      for (var n in notifications) {
+                                        n.isRead = true;
+                                      }
+                                    });
+                                    NotificationService.instance.setBadgeFromServer(0);
+                                    widget.onBadgeChanged?.call(widget.id, 0);
+                                    await ApiService.markAllNotificationsRead();
+                                    AppNavigator.pop();
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              );
+
+            }
+
+          ),
+        ],
+
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())

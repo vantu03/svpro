@@ -197,19 +197,22 @@ class ScheduleDisplayState extends State<ScheduleDisplay> {
             child: FloatingActionButton(
               backgroundColor: Colors.white,
               mini: true,
-              tooltip: 'Lịch hiện tại',
+              tooltip: 'Đi tới lịch hiện tại',
               onPressed: () {
                 setState(() {
                   focusedDay = today;
                 });
                 jumpToDate(today);
               },
-              child: const Icon(
-                Icons.explore,
+              child: Icon(
+                focusedDay.isAfter(today)
+                    ? Icons.arrow_upward
+                    : Icons.arrow_downward,
                 color: Colors.blue,
               ),
             ),
           ),
+
       ],
     );
   }

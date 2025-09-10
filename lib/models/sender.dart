@@ -28,8 +28,8 @@ class SenderModel {
       phoneNumber: json['phone_number'],
       defaultAddress: json['default_address'].toString(),
       status: json['status'],
-      createdAt: json['create_at'],
-      updatedAt: json['update_at'],
+      createdAt: json['created_at'],
+      updatedAt: json['updated_at'],
     );
   }
 }
