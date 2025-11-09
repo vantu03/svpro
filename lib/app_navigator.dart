@@ -12,7 +12,7 @@ class AppNavigator {
   static bool get hasPending => pendingPath != null;
 
   /// Đảm bảo code chạy sau build/layout/paint
-  static Future<T?> _post<T>(FutureOr<T> Function() fn) {
+  static Future<T?> post<T>(FutureOr<T> Function() fn) {
     final completer = Completer<T?>();
     final phase = SchedulerBinding.instance.schedulerPhase;
 
@@ -36,7 +36,7 @@ class AppNavigator {
       pendingPath = path;
       return;
     }
-    _post(() => ctx?.go(path));
+    post(() => ctx?.go(path));
   }
 
   static void safePush(String path) {
@@ -44,7 +44,7 @@ class AppNavigator {
       pendingPath = path;
       return;
     }
-    _post(() => ctx?.push(path));
+    post(() => ctx?.push(path));
   }
 
   static void safeReplace(String path) {
@@ -52,29 +52,30 @@ class AppNavigator {
       pendingPath = path;
       return;
     }
-    _post(() => ctx?.go(path));
+    post(() => ctx?.go(path));
   }
 
-  static void safePushWidget(Widget page, {bool fullscreenDialog = false}) {
-    if (!hasContext) return;
-    _post(() => Navigator.of(ctx!).push(
+  static Future<T?> safePushWidget<T>(Widget page, {bool fullscreenDialog = false}) {
+    if (!hasContext) return Future.value(null);
+    return Navigator.of(ctx!).push<T>(
       MaterialPageRoute(
         builder: (_) => page,
         fullscreenDialog: fullscreenDialog,
       ),
-    ));
+    );
   }
+
 
   static void safeReplaceWidget(Widget page) {
     if (!hasContext) return;
-    _post(() => Navigator.of(ctx!).pushReplacement(
+    post(() => Navigator.of(ctx!).pushReplacement(
       MaterialPageRoute(builder: (_) => page),
     ));
   }
 
   static void safeGoWidget(Widget page) {
     if (!hasContext) return;
-    _post(() => Navigator.of(ctx!).pushAndRemoveUntil(
+    post(() => Navigator.of(ctx!).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => page),
           (route) => false,
     ));
@@ -85,70 +86,27 @@ class AppNavigator {
     if (!hasContext || pendingPath == null) return;
     final path = pendingPath!;
     pendingPath = null;
-    _post(() => ctx?.go(path));
+    post(() => ctx?.go(path));
     AppNavigator.warning(path);
   }
 
   // ===== Pop =====
   static void pop<T extends Object?>([T? result]) {
     if (!hasContext) return;
-    _post(() => Navigator.of(ctx!).pop(result));
+    post(() => Navigator.of(ctx!).pop(result));
   }
 
   static void popIfCan<T extends Object?>([T? result]) {
     if (!hasContext) return;
-    _post(() {
+    post(() {
       final nav = Navigator.of(ctx!);
       if (nav.canPop()) nav.pop(result);
     });
   }
 
-  // ===== Dialogs =====
-  static Future<void> showConfirmationDialog({
-    required String title,
-    required String content,
-    required String confirmText,
-    required VoidCallback onConfirm,
-    String? cancelText = 'Hủy',
-    Color confirmColor = Colors.blue,
-    bool useRootNavigator = true,
-  }) {
-    if (!hasContext) return Future.value();
-
-    return _post(() {
-      return showDialog<void>(
-        context: ctx!,
-        useRootNavigator: useRootNavigator,
-        barrierDismissible: false,
-        builder: (dialogCtx) => AlertDialog(
-          title: Text(title),
-          content: Text(content),
-          actions: [
-            if (cancelText != null)
-              TextButton(
-                onPressed: () => Navigator.of(dialogCtx).pop(),
-                child: Text(cancelText),
-              ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(dialogCtx).pop();
-                onConfirm();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: confirmColor,
-                foregroundColor: Colors.white,
-              ),
-              child: Text(confirmText),
-            ),
-          ],
-        ),
-      );
-    });
-  }
-
   static Future<void> showLoadingDialog({bool useRootNavigator = true, String? message}) {
     if (!hasContext) return Future.value();
-    return _post(() {
+    return post(() {
       return showDialog<void>(
         context: ctx!,
         useRootNavigator: useRootNavigator,
@@ -180,49 +138,6 @@ class AppNavigator {
     });
   }
 
-
-  static void hideDialog({bool useRootNavigator = true}) {
-    if (!hasContext) return;
-    _post(() {
-      final navigator = Navigator.of(ctx!, rootNavigator: useRootNavigator);
-      if (navigator.canPop()) navigator.pop();
-    });
-  }
-
-  static Future<void> showForcedActionDialog({
-    required String title,
-    required String content,
-    required VoidCallback onConfirm,
-    String confirmText = 'Xác nhận',
-  }) {
-    if (!hasContext) return Future.value();
-
-    return _post(() {
-      return showDialog<void>(
-        context: ctx!,
-        barrierDismissible: false,
-        builder: (dctx) {
-          return WillPopScope(
-            onWillPop: () async => false,
-            child: AlertDialog(
-              title: Text(title),
-              content: Text(content),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dctx).pop();
-                    onConfirm();
-                  },
-                  child: Text(confirmText),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    });
-  }
-
   static void _snack(
       String message, {
         IconData? icon,
@@ -239,6 +154,7 @@ class AppNavigator {
     messenger.clearSnackBars();
     messenger.showSnackBar(
       SnackBar(
+
         elevation: 0,
         behavior: SnackBarBehavior.floating,
         backgroundColor: Colors.transparent,
@@ -302,6 +218,16 @@ class AppNavigator {
   static Future<String> getAppVersion() async {
     final info = await PackageInfo.fromPlatform();
     return info.version;
+  }
+
+  static Future<void> showAlertDialog(AlertDialog dialog) {
+    if (!hasContext) return Future.value();
+    return post(() async {
+      await showDialog<void>(
+        context: ctx!,
+        builder: (_) => dialog,
+      );
+    });
   }
 
 }

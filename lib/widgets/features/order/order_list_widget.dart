@@ -162,8 +162,8 @@ class OrderListWidgetState extends State<OrderListWidget> {
           }
           return OrderItemWidget(
             order: orders[index],
-            onTap: () {
-              AppNavigator.safePushWidget(OrderDetailWidget(order: orders[index],));
+            onTap: () async {
+              await AppNavigator.safePushWidget(OrderDetailWidget(order: orders[index],));
             },
           );
         },

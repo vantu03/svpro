@@ -46,6 +46,10 @@ class ScheduleCalendarState extends State<ScheduleCalendar> {
           firstDay: widget.firstDay,
           lastDay: widget.lastDay,
           calendarFormat: calendarFormat,
+          availableCalendarFormats: const {
+            CalendarFormat.month: 'Lịch tháng',
+            CalendarFormat.week: 'Lịch tuần',
+          },
           calendarStyle: CalendarStyle(
             selectedDecoration: BoxDecoration(
               color: Colors.blue,
@@ -79,9 +83,12 @@ class ScheduleCalendarState extends State<ScheduleCalendar> {
           },
 
           onFormatChanged: (format) {
-            setState(() {
-              calendarFormat = format;
-            });
+
+            if (calendarFormat != format) {
+              setState(() {
+                calendarFormat = format;
+              });
+            }
           },
           selectedDayPredicate: (day) => isSameDay(widget.selectedDay, day),
 

@@ -10,12 +10,9 @@ class ApiService {
   static Map<String, String> get authHeaders => {
     'Authorization': 'Bearer ${LocalStorage.auth_token}',
     'Content-Type': 'application/json',
-    'X-App-Version': AppCore.packageInfo?.version ?? 'unknown',
-    'X-App-Build': AppCore.packageInfo?.buildNumber ?? '0',
   };
 
   static Future<http.Response> login(String username, String password, deviceInfo) async {
-
     return await http.post(
       Uri.parse('${AppCore.request_url}/auth/login'),
       headers: authHeaders,
@@ -83,32 +80,16 @@ class ApiService {
   }
 
   static Future<http.Response> registerShipper(
-      String full_name,
-      String phone_number,
-      String identity_number,
+      String fullName,
+      String phoneNumber,
       String address,
-      String date_of_birth,
-      String gender,
-      String vehicle_type,
-      String license_plate,
-      String portrait_image,
-      String identity_image_front,
-      String identity_image_back,
       ) async {
     final uri = Uri.parse('${AppCore.request_url}/shipper/register');
 
     final body = {
-      'full_name': full_name,
-      'phone_number': phone_number,
-      'identity_number': identity_number,
+      'full_name': fullName,
+      'phone_number': phoneNumber,
       'address': address,
-      'date_of_birth': date_of_birth,
-      'gender': gender,
-      'vehicle_type': vehicle_type,
-      'license_plate': license_plate,
-      'portrait_image': portrait_image,
-      'identity_image_front': identity_image_front,
-      'identity_image_back': identity_image_back,
     };
 
     return await http.post(
@@ -118,24 +99,22 @@ class ApiService {
     );
   }
 
-  static Future<http.Response> uploadImage(
+  static Future<http.Response> uploadFile(
       XFile file,
       String fileType,
       ) async {
-    final uri = Uri.parse('${AppCore.request_url}/upload/image');
+    final uri = Uri.parse('${AppCore.request_url}/upload/');
     final request = http.MultipartRequest('POST', uri);
     request.headers['Authorization'] = 'Bearer ${LocalStorage.auth_token}';
     request.fields['file_type'] = fileType;
 
     final bytes = await file.readAsBytes();
     final fileName = file.name;
-    final mediaType = AppCore.getMediaType(fileName);
 
     final multipartFile = http.MultipartFile.fromBytes(
       'file',
       bytes,
       filename: fileName,
-      contentType: mediaType,
     );
 
     request.files.add(multipartFile);
@@ -143,6 +122,7 @@ class ApiService {
     final streamedResponse = await request.send();
     return await http.Response.fromStream(streamedResponse);
   }
+
 
   static Future<http.Response> getNotifications({
     int offset = 0,
@@ -317,6 +297,110 @@ class ApiService {
     final uri = Uri.parse('${AppCore.request_url}/auth/login/config');
     return await http.get(
       uri,
+      headers: authHeaders,
+    );
+  }
+
+  //Lấy template tương tác
+  static Future<http.Response> getReactions() async {
+    final uri = Uri.parse('${AppCore.request_url}/reaction/');
+    return await http.get(uri, headers: authHeaders);
+  }
+
+  // Lấy danh sách bài viết mới
+  static Future<http.Response> getNews(bool initial) async {
+    final uri = Uri.parse('${AppCore.request_url}/post/news').replace(
+      queryParameters: {
+        'initial': initial.toString()
+      },
+    );
+    return await http.get(uri, headers: authHeaders);
+  }
+
+  // Tạo bài viết
+  static Future<http.Response> createPost(String content, {List<int>? attachments}) async {
+    final uri = Uri.parse('${AppCore.request_url}/post/create');
+    final body = {
+      'content': content,
+      if (attachments != null) 'attachments': attachments,
+    };
+    return await http.post(uri, headers: authHeaders, body: jsonEncode(body));
+  }
+
+  // Xoá bài viết
+  static Future<http.Response> deletePost(int postId) async {
+    final uri = Uri.parse('${AppCore.request_url}/post/$postId/delete');
+    return await http.delete(uri, headers: authHeaders);
+  }
+
+  // Lấy bình luận của bài viết
+
+  static Future<http.Response> getComments(
+      int postId, {
+        int offset = 0,
+        int limit = 10,
+      }) async {
+    final uri = Uri.parse('${AppCore.request_url}/post/$postId/comments').replace(
+      queryParameters: {
+        'offset': offset.toString(),
+        'limit': limit.toString(),
+      },
+    );
+
+    return await http.get(
+      uri,
+      headers: authHeaders,
+    );
+  }
+
+  // Thêm bình luận
+  static Future<http.Response> createComment(int postId, String content) async {
+    final uri = Uri.parse('${AppCore.request_url}/post/$postId/comment/create');
+    final body = {'content': content};
+    return await http.post(uri, headers: authHeaders, body: jsonEncode(body));
+  }
+
+  // Xoá bình luận
+  static Future<http.Response> deleteComment(int postId, int commentId) async {
+    final uri = Uri.parse('${AppCore.request_url}/post/$postId/comment/$commentId/delete');
+    return await http.delete(uri, headers: authHeaders);
+  }
+
+  // Tương tác
+  static Future<http.Response> interactPost(int postId) async {
+    final uri = Uri.parse('${AppCore.request_url}/post/$postId/interact');
+    final body = {};
+    return await http.post(uri, headers: authHeaders, body: jsonEncode(body));
+  }
+
+  // Ghi nhận view
+  static Future<http.Response> addView(int postId) async {
+    final uri = Uri.parse('${AppCore.request_url}/post/$postId/view');
+    return await http.post(uri, headers: authHeaders);
+  }
+
+
+  static Future<http.Response> sendFeedback({
+    required String title,
+    required String content,
+  }) async {
+    final uri = Uri.parse('${AppCore.request_url}/feedback/create');
+
+    final body = {
+      'title': title,
+      'content': content,
+    };
+
+    return await http.post(
+      uri,
+      headers: authHeaders,
+      body: jsonEncode(body),
+    );
+  }
+
+  static Future<http.Response> getUtilities() async {
+    return await http.get(
+      Uri.parse('${AppCore.request_url}/common/utilities'),
       headers: authHeaders,
     );
   }

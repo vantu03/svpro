@@ -15,6 +15,12 @@ class LocalStorage {
   static int notifyTomorrowMinute = 0;
   static int notifyWeeklyHour = 20;
   static int notifyWeeklyMinute = 0;
+  static int userId = -1;
+  static String? userAvatarUrl;
+  static String? userFullName;
+  static String utilities = '';
+  static List<Map<String, dynamic>> customSchedules = [];
+  static List<Map<String, dynamic>> schedules = [];
 
   /// ==== Load toàn bộ từ SharedPreferences vào RAM ====
   static Future<void> init() async {
@@ -34,6 +40,13 @@ class LocalStorage {
     notifyTomorrowMinute = prefs.getInt('notifyTomorrowMinute') ?? 0;
     notifyWeeklyHour = prefs.getInt('notifyWeeklyHour') ?? 20;
     notifyWeeklyMinute = prefs.getInt('notifyWeeklyMinute') ?? 0;
+
+    userId = prefs.getInt('user_id') ?? -1;
+
+    utilities = prefs.getString('utilities') ?? '';
+
+    customSchedules = List<Map<String, dynamic>>.from(jsonDecode(prefs.getString('customSchedules') ?? '[]'));
+    schedules = List<Map<String, dynamic>>.from(jsonDecode(prefs.getString('schedules') ?? '[]'));
 
   }
 
@@ -56,6 +69,12 @@ class LocalStorage {
     await prefs.setInt('notifyWeeklyHour', notifyWeeklyHour);
     await prefs.setInt('notifyWeeklyMinute', notifyWeeklyMinute);
 
+    await prefs.setInt('user_id', userId);
+
+    await prefs.setString('utilities', utilities);
+
+    await prefs.setString('customSchedules', jsonEncode(customSchedules));
+    await prefs.setString('schedules', jsonEncode(schedules));
   }
 
 }

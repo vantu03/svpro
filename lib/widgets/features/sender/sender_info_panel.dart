@@ -48,8 +48,8 @@ class SenderInfoPanel extends StatelessWidget {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         elevation: 0, // phẳng hơn
                       ),
-                      onPressed: () {
-                        AppNavigator.safePushWidget(SenderCreateOrderForm(sender: sender));
+                      onPressed: () async {
+                        await AppNavigator.safePushWidget(SenderCreateOrderForm(sender: sender));
                       },
                     ),
                   ],

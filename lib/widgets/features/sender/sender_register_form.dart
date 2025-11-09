@@ -47,7 +47,7 @@ class SenderRegisterFormState extends State<SenderRegisterForm> {
     } catch (e) {
       AppNavigator.error('Không thể kết nối tới máy chủ');
     } finally {
-      AppNavigator.hideDialog();
+      AppNavigator.pop();
     }
   }
 
@@ -120,7 +120,7 @@ class SenderRegisterFormState extends State<SenderRegisterForm> {
                       onPressed: () async {
                         AppNavigator.showLoadingDialog(message: "Đang lấy địa chỉ...");
                         final address = await LocationService.getCurrentAddress();
-                        AppNavigator.hideDialog();
+                        AppNavigator.pop();
 
                         if (address != null) {
                           setState(() {

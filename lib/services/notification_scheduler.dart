@@ -7,11 +7,9 @@ import 'package:intl/intl.dart';
 
 class NotificationScheduler {
   static Future<void> setupAllLearningNotifications() async {
-    if (LocalStorage.schedule.isEmpty) return;
+    if (LocalStorage.schedules.isEmpty) return;
 
-    final events = (LocalStorage.schedule['schedule'] as List)
-        .map((e) => Schedule.fromJson(e))
-        .toList();
+    final events = LocalStorage.schedules.map((e) => Schedule.fromJson(e)).toList();
 
     await NotificationService().cancelAllNotifications();
 

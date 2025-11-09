@@ -1,19 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class PendingApplicationWidget extends StatelessWidget {
   final Map<String, dynamic> application;
 
   const PendingApplicationWidget({super.key, required this.application});
-
-  String formatDateTime(String isoString) {
-    try {
-      final date = DateTime.parse(isoString);
-      return DateFormat('HH:mm dd/MM/yyyy').format(date);
-    } catch (_) {
-      return isoString;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,25 +43,9 @@ class PendingApplicationWidget extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Text("Loại xe:", style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(width: 8),
-                  Text(application['vehicle_type'] ?? 'Không rõ'),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Text("Biển số:", style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(width: 8),
-                  Text(application['license_plate'] ?? 'Không rõ'),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
                   const Text("Thời gian gửi:", style: TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(width: 8),
-                  Text(formatDateTime(application['created_at'] ?? '')),
+                  Text(timeago.format(DateTime.parse(application['created_at']), locale: 'vi')),
                 ],
               ),
             ],

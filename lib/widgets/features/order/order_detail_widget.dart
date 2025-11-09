@@ -40,7 +40,7 @@ class OrderDetailWidgetState extends State<OrderDetailWidget> {
     } catch (e) {
       debugPrint("error: $e");
     } finally {
-      AppNavigator.hideDialog();
+      AppNavigator.pop();
     }
   }
 
@@ -135,10 +135,7 @@ class OrderDetailWidgetState extends State<OrderDetailWidget> {
                 children: [
                   CircleAvatar(
                     radius: 25,
-                    backgroundImage: (widget.order.shipper!.avatarUrl != null &&
-                        widget.order.shipper!.avatarUrl!.isNotEmpty)
-                        ? NetworkImage(widget.order.shipper!.avatarUrl!)
-                        : const AssetImage('assets/images/default_avatar.png')
+                    backgroundImage: AssetImage('assets/images/default_avatar.png')
                     as ImageProvider,
                   ),
                   const SizedBox(width: 12),

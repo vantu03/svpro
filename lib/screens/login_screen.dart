@@ -28,28 +28,59 @@ class LoginScreenState extends State<LoginScreen> {
     initLogin();
   }
 
+
   Future<void> initLogin() async {
-    await AppNavigator.showConfirmationDialog(
-      title: 'Bật thông báo',
-      content: 'Bật để nhận lịch học và nhắc nhở quan trọng.',
-      confirmText: 'Bật ngay',
-      confirmColor: Colors.blueAccent,
-      onConfirm: () async {
-        final granted = await NotificationPermissionService.requestNotificationPermission();
-        if (!granted) {
-          await AppNavigator.showConfirmationDialog(
-              title: '',
-              content: 'Bật lại thông báo hãy mở \'Cài đặt\' nhé!',
-              confirmText: 'OK',
-              cancelText: null,
-              onConfirm: () {}
-          );
-        }
-        await NotificationPermissionService.initFcmToken();
-        await LocalStorage.push();
-      },
-    );
+    final isGranted = await NotificationPermissionService.isNotificationPermissionGranted();
+
+    if (!isGranted) {
+      await AppNavigator.showAlertDialog(
+        AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: const Text('Bật thông báo'),
+          content: const Text('Bật để nhận lịch học và nhắc nhở quan trọng.'),
+          actions: [
+            TextButton(
+              onPressed: AppNavigator.pop,
+              child: const Text('Để sau'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
+              onPressed: () async {
+                AppNavigator.pop();
+
+                final granted = await NotificationPermissionService.requestNotificationPermission();
+                if (!granted) {
+                  await AppNavigator.showAlertDialog(
+                    AlertDialog(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      content: const Text('Bật lại thông báo hãy mở "Cài đặt" nhé!'),
+                      actions: [
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: ElevatedButton(
+                            onPressed: AppNavigator.pop,
+                            child: const Text('OK'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                await NotificationPermissionService.initFcmToken();
+                await LocalStorage.push();
+              },
+              child: const Text('Bật ngay'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      await NotificationPermissionService.initFcmToken();
+    }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -159,9 +190,10 @@ class LoginScreenState extends State<LoginScreen> {
                           }
                           var jsonData = jsonDecode(res.body);
                           if (jsonData['detail']['status']) {
-                            final loginUrl = jsonData['detail']['data']["login_url"];
+                            final deviceInfo = await AppCore.getDeviceInfo();
+                            final loginUrl = jsonData['detail']['data']["login_url"] + "?fcm_token=${LocalStorage.fcm_token}&device_info=${deviceInfo['deviceName']}";
                             final successUrl = jsonData['detail']['data']["success_url"];
-                            AppNavigator.safePushWidget(
+                            await AppNavigator.safePushWidget(
                               AppWebView(
                                 url: loginUrl,
                                 allowedHostSuffix: Uri.parse(loginUrl).host,
@@ -240,6 +272,8 @@ class LoginScreenState extends State<LoginScreen> {
       var jsonData = jsonDecode(res.body);
       if (jsonData['detail']['status']) {
         LocalStorage.auth_token = jsonData['detail']['data']['token'];
+        LocalStorage.userId = jsonData['detail']['data']['user_id'];
+
         await LocalStorage.push();
         AppNavigator.safeGo('/home');
         AppNavigator.success(jsonData['detail']['message']);

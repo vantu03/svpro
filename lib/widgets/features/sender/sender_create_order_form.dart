@@ -42,7 +42,7 @@ class SenderCreateOrderFormState extends State<SenderCreateOrderForm> {
       // Lấy GPS của người gửi
       final position = await LocationService.getCurrentLocation();
       if (position == null) {
-        AppNavigator.hideDialog();
+        AppNavigator.pop();
         AppNavigator.warning("Không thể lấy GPS của bạn, vui lòng thử lại!");
         return;
       }
@@ -75,7 +75,7 @@ class SenderCreateOrderFormState extends State<SenderCreateOrderForm> {
       debugPrint("error: $e");
       AppNavigator.error('Không thể kết nối tới máy chủ');
     } finally {
-      AppNavigator.hideDialog();
+      AppNavigator.pop();
     }
   }
 
@@ -124,7 +124,7 @@ class SenderCreateOrderFormState extends State<SenderCreateOrderForm> {
                   onPressed: () async {
                     AppNavigator.showLoadingDialog(message: "Đang lấy địa chỉ...");
                     final address = await LocationService.getCurrentAddress();
-                    AppNavigator.hideDialog();
+                    AppNavigator.pop();
 
                     if (address != null) {
                       setState(() {

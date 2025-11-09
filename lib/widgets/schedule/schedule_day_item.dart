@@ -14,10 +14,40 @@ class ItemContent extends StatefulWidget {
 
   @override
   State<ItemContent> createState() => ItemContentState();
+
+
+  static List<Widget> buildDetailList(Map? data, Color color) {
+    if (data == null || data.isEmpty) return [];
+    return (data.entries).map<Widget>((e) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          children: [
+            Icon(
+                Icons.circle,
+                size: 6,
+                color: color
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                '${e.key}: ${e.value}',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: color,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
+  }
 }
 
 class ItemContentState extends State<ItemContent> {
   bool isExpanded = false;
+
 
   @override
   Widget build(BuildContext context) {
@@ -64,38 +94,9 @@ class ItemContentState extends State<ItemContent> {
             const SizedBox(height: 6),
             Column(
               children: [
-                ...widget.event!.detail.entries.map(
-                      (e) => Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('• ',
-                          style:
-                          TextStyle(color: Colors.white, fontSize: 12)),
-                      Expanded(
-                        child: Text('${e.key}: ${e.value}',
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 12)),
-                      ),
-
-                    ],
-                  ),
-                ),
-                if (isExpanded && widget.event!.hidden.isNotEmpty) ...widget.event!.hidden.entries.map(
-                      (e) => Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('• ',
-                          style:
-                          TextStyle(color: Colors.white, fontSize: 12)),
-                      Expanded(
-                        child: Text('${e.key}: ${e.value}',
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 12)),
-                      ),
-
-                    ],
-                  ),
-                ),
+                ...ItemContent.buildDetailList(widget.event!.detail, Colors.white),
+                if (isExpanded && widget.event!.hidden.isNotEmpty)
+                  ...ItemContent.buildDetailList(widget.event!.hidden, Colors.white),
               ],
             ),
           ],

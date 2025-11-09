@@ -38,7 +38,7 @@ class ImageUploadTileState extends State<ImageUploadTile> {
     });
 
     try {
-      final res = await ApiService.uploadImage(picked, widget.fileType);
+      final res = await ApiService.uploadFile(picked, widget.fileType);
       if (res.statusCode == 422) {
         AppCore.handleValidationError(res.body);
         return;

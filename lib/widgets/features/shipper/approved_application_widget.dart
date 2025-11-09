@@ -20,8 +20,8 @@ class ApprovedApplicationWidget extends StatelessWidget {
               menuButton(
                 icon: Icons.person,
                 label: "Hồ sơ cá nhân",
-                onTap: () {
-                  AppNavigator.safePushWidget(const ShipperDetailWidget());
+                onTap: () async {
+                  await AppNavigator.safePushWidget(const ShipperDetailWidget());
                 },
               ),
               menuButton(

@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http_parser/http_parser.dart';
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -23,22 +22,6 @@ class AppCore {
   //static const request_url = 'http://127.0.0.1:8000';
 
   static PackageInfo? packageInfo;
-
-  static MediaType getMediaType(String path) {
-    final ext = path.toLowerCase().split('.').last;
-
-    switch (ext) {
-      case 'jpg':
-      case 'jpeg':
-        return MediaType('image', 'jpeg');
-      case 'png':
-        return MediaType('image', 'png');
-      case 'webp':
-        return MediaType('image', 'webp');
-      default:
-        return MediaType('application', 'octet-stream');
-    }
-  }
 
   static final Map<String, Map<String, dynamic>> orderStatusInfo = {
     'pending': {
@@ -181,4 +164,21 @@ class AppCore {
     };
   }
 
+  static String formatCompact(num value) {
+    if (value < 1000) {
+      return value.toString(); // nhỏ hơn 1000 thì giữ nguyên
+    } else if (value < 1000000) {
+      // từ 1k đến < 1 triệu
+      double result = value / 1000;
+      return result.toStringAsFixed(result.truncateToDouble() == result ? 0 : 1) + "k";
+    } else if (value < 1000000000) {
+      // từ 1 triệu đến < 1 tỷ
+      double result = value / 1000000;
+      return result.toStringAsFixed(result.truncateToDouble() == result ? 0 : 1) + "tr";
+    } else {
+      // >= 1 tỷ
+      double result = value / 1000000000;
+      return result.toStringAsFixed(result.truncateToDouble() == result ? 0 : 1) + "tỉ";
+    }
+  }
 }

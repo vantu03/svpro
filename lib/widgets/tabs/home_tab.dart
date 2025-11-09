@@ -1,13 +1,18 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:svpro/app_navigator.dart';
 import 'package:svpro/models/user.dart';
 import 'package:svpro/services/api_service.dart';
+import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/widgets/feature_item.dart';
+import 'package:svpro/widgets/features/feature_feedback.dart';
+import 'package:svpro/widgets/features/feature_utilities.dart';
 import 'package:svpro/widgets/features/feature_schedule.dart';
 import 'package:svpro/widgets/features/feature_privacy_policy.dart';
 import 'package:svpro/widgets/features/feature_sender.dart';
 import 'package:svpro/widgets/features/feature_shipper.dart';
+import 'package:svpro/widgets/post/post_avatar.dart';
 import 'package:svpro/widgets/tab_item.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:svpro/ws/ws_client.dart';
@@ -34,9 +39,11 @@ class HomeTab extends StatefulWidget implements TabItem {
 
 class HomeTabState extends State<HomeTab> {
   final List<FeatureItem> features = const [
+    FeatureUtilities(),
     FeatureSchedule(),
     FeatureSender(),
     FeatureShipper(),
+    FeatureFeedback(),
     FeaturePrivacyPolicy(),
   ];
 
@@ -63,6 +70,25 @@ class HomeTabState extends State<HomeTab> {
   Future<void> handleRefresh() async {
     await loadBanners();
     await loadUserInfo();
+    await loadUtilities();
+  }
+
+
+  Future<void> loadUtilities() async {
+
+    try {
+      final response = await ApiService.getUtilities();
+      var jsonData = jsonDecode(response.body);
+      if (jsonData['detail']['status']) {
+        LocalStorage.utilities = jsonData['detail']['data']['url'];
+        await LocalStorage.push();
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      debugPrint("error: $e");
+    }
   }
 
   Future<void> loadUserInfo() async {
@@ -74,6 +100,10 @@ class HomeTabState extends State<HomeTab> {
         setState(() {
           user = UserModel.fromJson(jsonData['detail']['data']);
         });
+        LocalStorage.userId = user!.id;
+        LocalStorage.userFullName = user!.fullName;
+        LocalStorage.userAvatarUrl = user!.avatarUrl;
+        await LocalStorage.push();
       }
     } catch (e) {
       debugPrint("error: $e");
@@ -175,10 +205,42 @@ class HomeTabState extends State<HomeTab> {
       ),
       child: Row(
         children: [
-          const CircleAvatar(
-            radius: 36,
-            backgroundColor: Colors.orange,
-            child: Icon(Icons.person, size: 36, color: Colors.white),
+          InkWell(
+            onTap: () async {
+              final picker = ImagePicker();
+              final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+              if (file == null) return;
+
+              AppNavigator.showLoadingDialog(message: "Đang tải ảnh...");
+              try {
+                final res = await ApiService.uploadFile(file, "avatar");
+                final jsonData = jsonDecode(res.body);
+
+                if (jsonData['detail']['status']) {
+                  final url = jsonData['detail']['data']['url'];
+                  setState(() {
+                    user?.avatarUrl = url;
+                  });
+
+                  LocalStorage.userAvatarUrl = url;
+                  await LocalStorage.push();
+
+                  AppNavigator.success("Cập nhật ảnh đại diện thành công");
+                } else {
+                  AppNavigator.error(jsonData['detail']['message']);
+                }
+              } catch (e) {
+                debugPrint("error: $e");
+                AppNavigator.error("Không thể upload ảnh");
+              } finally {
+                AppNavigator.pop();
+              }
+            },
+            child: PostAvatar(
+              url: user?.avatarUrl,
+              radius: 36,
+              size: 36,
+            ),
           ),
           const SizedBox(width: 16),
           Column(
@@ -198,6 +260,7 @@ class HomeTabState extends State<HomeTab> {
       ),
     );
   }
+
 
   Widget featureList() {
     return Column(

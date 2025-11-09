@@ -8,6 +8,7 @@ import 'package:svpro/services/api_service.dart';
 import 'package:svpro/services/local_storage.dart';
 import 'package:svpro/services/notification_scheduler.dart';
 import 'package:svpro/widgets/tabs/home_tab.dart';
+import 'package:svpro/widgets/tabs/news_feed_tab.dart';
 import 'package:svpro/widgets/tabs/schedule_tab.dart';
 import 'package:svpro/widgets/tabs/notification_tab.dart';
 import 'package:svpro/widgets/tabs/menu_tab.dart';
@@ -54,6 +55,7 @@ class HomeScreenState extends State<HomeScreen> {
     tabs = [
       const HomeTab(),
       const ScheduleTab(),
+      NewsFeedTab(),
       NotificationTab(onBadgeChanged: setBadge),
       const MenuTab(),
     ];
@@ -70,6 +72,8 @@ class HomeScreenState extends State<HomeScreen> {
         wsService.onLogout = () async {
           LocalStorage.auth_token = '';
           LocalStorage.schedule = {};
+          LocalStorage.customSchedules = [];
+          LocalStorage.schedules = [];
           await LocalStorage.push();
           await NotificationScheduler.setupAllLearningNotifications();
           AppNavigator.safeGo('/login');
@@ -85,7 +89,7 @@ class HomeScreenState extends State<HomeScreen> {
     await checkForUpdate();
   }
 
- Future<void> checkForUpdate() async {
+  Future<void> checkForUpdate() async {
     try {
       final res = await ApiService.checkUpdate();
 
@@ -98,34 +102,44 @@ class HomeScreenState extends State<HomeScreen> {
       if (jsonData['detail']['status'] == true) {
         final data = jsonData['detail']['data'];
 
-
-
-        if (data['update']) {
-          if (data['force']) {
-            AppNavigator.showForcedActionDialog(
-              title: data['title'],
-              content: data['content'],
-              onConfirm: () async {
-                final url = Uri.parse(data['url']);
-                if (await canLaunchUrl(url)) {
-                  await launchUrl(url, mode: LaunchMode.externalApplication);
-                }
-              },
-              confirmText: data['confirm_text'],
-            );
-          } else {
-            AppNavigator.showConfirmationDialog(
-              title: data['title'],
-              content: data['content'],
-              confirmText: data['confirm_text'],
-              onConfirm: () async {
-                final url = Uri.parse(data['url']);
-                if (await canLaunchUrl(url)) {
-                  await launchUrl(url, mode: LaunchMode.externalApplication);
-                }
-              },
-            );
-          }
+        if (data['update'] == true) {
+          await AppNavigator.showAlertDialog(
+            AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)
+              ),
+              title: Text(data['title']),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.system_update,
+                      size: 48, color: Colors.blue),
+                  const SizedBox(height: 10),
+                  Text(
+                    data['content'] ?? '',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: AppNavigator.pop,
+                  child: const Text("Bỏ qua"),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final url = Uri.tryParse(data['url'] ?? '');
+                    if (url != null && await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                    }
+                    AppNavigator.pop();
+                  },
+                  child: const Text("Cập nhật"),
+                ),
+              ],
+            ),
+          );
         }
       }
     } catch (e) {
@@ -135,8 +149,8 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    wsService.disconnect();
     super.dispose();
-    //wsService.disconnect();
   }
 
   void switchToTab(int index) {

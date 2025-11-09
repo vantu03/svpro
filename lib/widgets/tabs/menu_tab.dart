@@ -58,36 +58,51 @@ class MenuTabState extends State<MenuTab> {
             title: const Text('Đăng xuất',
                 style: TextStyle(color: Colors.red)),
             onTap: () {
-              AppNavigator.showConfirmationDialog(
-                title: 'Xác nhận',
-                content: 'Bạn có chắc muốn đăng xuất?',
-                confirmText: 'Đăng xuất',
-                confirmColor: Colors.red,
-                onConfirm: () async {
-                  try {
-                    AppNavigator.showLoadingDialog();
-                    final response = await ApiService.logout();
-                    final jsonData = jsonDecode(response.body);
+              AppNavigator.showAlertDialog(
+                AlertDialog(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  title: const Text('Xác nhận'),
+                  content: const Text('Bạn có chắc muốn đăng xuất?'),
+                  actions: [
+                    TextButton(
+                      onPressed: AppNavigator.pop,
+                      child: const Text('Hủy'),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      onPressed: () async {
+                        AppNavigator.pop();
+                        try {
+                          AppNavigator.showLoadingDialog();
+                          final response = await ApiService.logout();
+                          final jsonData = jsonDecode(response.body);
 
-                    if (jsonData['detail']['status']) {
-                      AppNavigator.warning(jsonData['detail']['message']);
-                    } else {
-                      AppNavigator.error(jsonData['detail']['message']);
-                    }
-                  } catch (e) {
-                    debugPrint("error: $e");
-                    AppNavigator.error('Không thể kết nối tới máy chủ');
-                  } finally {
-
-                    LocalStorage.auth_token = '';
-                    LocalStorage.schedule = {};
-                    await LocalStorage.push();
-                    await NotificationScheduler.setupAllLearningNotifications();
-                    AppNavigator.safeGo('/login');
-                  }
-                },
+                          if (jsonData['detail']['status']) {
+                            AppNavigator.warning(jsonData['detail']['message']);
+                          } else {
+                            AppNavigator.error(jsonData['detail']['message']);
+                          }
+                        } catch (e) {
+                          debugPrint("error: $e");
+                          AppNavigator.error('Không thể kết nối tới máy chủ');
+                        } finally {
+                          LocalStorage.auth_token = '';
+                          LocalStorage.schedule = {};
+                          LocalStorage.customSchedules = [];
+                          LocalStorage.schedules = [];
+                          await LocalStorage.push();
+                          await NotificationScheduler.setupAllLearningNotifications();
+                          AppNavigator.safeGo('/login');
+                        }
+                      },
+                      child: const Text('Đăng xuất'),
+                    ),
+                  ],
+                ),
               );
             },
+
+
           ),
 /*
           const Divider(),
